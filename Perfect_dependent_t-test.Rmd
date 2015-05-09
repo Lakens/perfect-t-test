@@ -18,7 +18,7 @@ output: word_document
 
 #First time user? Install packages below by removing # and running the install commands, then install WRS for the Wilcox robust statistics functions.
 
-#install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "multicore", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools","rmarkdown","gmodels", "HLMdiag", "car", "gridExtra", "BootES", "BEST", "plyr", "reshape2", "knitcitations"))
+#install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "multicore", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools","rmarkdown","gmodels", "HLMdiag", "car", "gridExtra", "BootES", "BEST", "plyr", "reshape2"))
 
 #Installation of the robust statistics package: Remove # in front of each of 4 lines below and run the code
 
@@ -37,18 +37,18 @@ output: word_document
 #Save your data as a .txt file - select Text (tab delimited)(*.txt).
 
 setwd("C:/")   # set working directory (i.e., the location of your data file).
-alldata <- read.delim("Stroop.txt", header=TRUE) #Define the name of the tab delimited txt file in the working directory that contains 3 columns: a subject identifier and 2 columns of the data in the two within-subject conditions.
+alldata <- read.delim("demo_dependent.txt", header=TRUE) #Define the name of the tab delimited txt file in the working directory that contains 3 columns: a subject identifier and 2 columns of the data in the two within-subject conditions.
 
 alldata<-na.omit(alldata)#rows with missing data are removed
 
 #IMPORTANT: Do not use spaces in names. If variable names in your file include spaces, change the names.
 
 #Define names of the two columns in alldata you want to compare. Difference is computed as x-y (so reverse labels as desired) 
-xlabel<-"Congruent"
-ylabel<-"Incongruent"
+xlabel<-"Congruent"  #name dependent variable 1 - needs to match the datafile!
+ylabel<-"Incongruent"  #name dependent variable 2 - needs to match the datafile!
 
 #Define name of individual subject identifier variable (e.g., the participantnumber)
-subject<-"PPNR"
+subject<-"PPNR"  #needs to match the datafile!
 
 #Define name of the factor that describes the difference between x and y (e.g., condition, time).
 factorlabel<-"congruency"
@@ -407,7 +407,7 @@ if (BF > 100){evidence<-"decisive evidence for H1"}
 
 ```
 
-This document summarizes a comparison between two independent groups, comparing `r ylabelstring` between the `r xlabel` and `r ylabel` conditions. This script can help to facilitate the (re-)analysis of data, and the word-output might prevent copy-paste errors when transferring results to a manuscript.
+This document summarizes a comparison between two independent groups, comparing `r ylabelstring` between the `r xlabel` and `r ylabel` conditions. This script can help to facilitate the analysis of data, and the word-output might prevent copy-paste errors when transferring results to a manuscript.
 
 Researchers can base their statistical inferences on Frequentist or robust statistics, as well as on Bayesian statistics. Effect sizes and their confidence intervals are provided, thus inviting researchers to interpret their data from multiple perspectives. 
 
@@ -587,7 +587,7 @@ A *p*-value is the probability of obtaining the observed result, or a more extre
 
 ####Results
 
-The mean `r ylabelstring` (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round(sd1, digits = 2)`) of participants in the `r xlabel` condition was `r direction` the mean (*M* = `r round(mean(y), digits = 2)`, *SD* = `r round(sd2,digits=2)`) of participants in the `r ylabel` condition. The difference between measurements is (*M* = `r round(m_diff, digits=2)`, *SD* = `r round(s_diff, digits=2)`), 95% CI = [`r round(CI_diff[1:1], digits=2)`;`r round(CI_diff[2:2],digits=2)`], *t*(`r round(ttestresult$parameter, digits=2)`) = `r round(tvalue, digits=2)`, *p* `r ifelse(pvalue>0.001," = ", " < ")` `r ifelse(pvalue>0.001, formatC(round(pvalue, digits=3),digits=3, format="f"), "0.001")`, Hedges' *g* = `r round(d_unb, digits=2)`, 95% CI [`r round(ci_l_d_av, digits=2)`;`r round(ci_u_d_av, digits=2)`] (or d~z~ = `r round(d_z, digits=2)`, 95% CI [`r round(ci_l_d_z, digits=2)`;`r round(ci_u_d_z, digits=2)`]). This can be considered a `r effectsize` effect. The observed data is `r surprising` under the assumption that the null-hypothesis is true. The Common Language effect size (McGraw & Wong, 1992) indicates that after controlling for individual differences, the likelihood that a persons `r ylabelstring` in the `r xlabel` condition is `r direction` the `r ylabelstring` in the `r ylabel` condition is `r round(100*CL, digits=0)`%.
+The mean `r ylabelstring` (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round(sd1, digits = 2)`) of participants in the `r xlabel` condition was `r direction` the mean (*M* = `r round(mean(y), digits = 2)`, *SD* = `r round(sd2,digits=2)`) of participants in the `r ylabel` condition (*r* = `r round(r, digits = 2)`). The difference between measurements is (*M* = `r round(m_diff, digits=2)`, *SD* = `r round(s_diff, digits=2)`), 95% CI = [`r round(CI_diff[1:1], digits=2)`;`r round(CI_diff[2:2],digits=2)`], *t*(`r round(ttestresult$parameter, digits=2)`) = `r round(tvalue, digits=2)`, *p* `r ifelse(pvalue>0.001," = ", " < ")` `r ifelse(pvalue>0.001, formatC(round(pvalue, digits=3),digits=3, format="f"), "0.001")`, Hedges' *g* = `r round(d_unb, digits=2)`, 95% CI [`r round(ci_l_d_av, digits=2)`;`r round(ci_u_d_av, digits=2)`] (or *d*~z~ = `r round(d_z, digits=2)`, 95% CI [`r round(ci_l_d_z, digits=2)`;`r round(ci_u_d_z, digits=2)`]). This can be considered a `r effectsize` effect. The observed data is `r surprising` under the assumption that the null-hypothesis is true. The Common Language effect size (McGraw & Wong, 1992) indicates that after controlling for individual differences, the likelihood that a persons `r ylabelstring` in the `r xlabel` condition is `r direction` the `r ylabelstring` in the `r ylabel` condition is `r round(100*CL, digits=0)`%.
 
 ###Bayesian statistics
 
@@ -595,7 +595,7 @@ Bayesian statistics can quantify the relative evidence in the data for either th
 
 ####Results
 
-The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This indicates the data are `r round(BF, digits = 2)` (or log(e) BF =`r round(log(BF), digits=2)`) times more probable under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, HDI = `r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`, `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`.  
+The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This indicates the data are `r round(BF, digits = 2)` (or log~e~ BF =`r round(log(BF), digits=2)`) times more probable under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, HDI = `r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`, `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`.  
 
 ###Robust statistics
 
