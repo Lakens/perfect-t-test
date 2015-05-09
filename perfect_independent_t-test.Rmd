@@ -1,0 +1,538 @@
+---
+title: "Independent *t*-test"
+author: "Daniel Lakens, D.Lakens@tue.nl"
+output: word_document
+---
+
+```{r, echo=FALSE, include=FALSE}
+
+####################################
+#######  How to use ################
+####################################
+
+# 1) Install the packages and software specified below. 
+# 2) Define the variable names, change the default settings, if desired
+# 3) Hit Knit Word! (Output takes about a two minutes, mainly do bootstrapping the robust effect size and calculating the Bayesian Highest Density Iinterval)
+
+####################################
+######  FIRST TIME ONLY ############
+####################################
+
+
+#install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "multicore", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools", "rmarkdown","gmodels", "HLMdiag", "car", "gridExtra", "BootES", "BEST", "plyr", "reshape2", "knitcitations"))
+
+#Installation of the robust statistics package: Remove # in front of each of 4 lines below and run the code
+
+#install.packages("devtools")
+#library("devtools")
+#install_github("mrxiaohe/WRScpp")
+#install_github("nicebread/WRS", subdir="pkg")
+
+#Download and install JAGS to clculate Bayesian HDI: http://sourceforge.net/projects/mcmc-jags/files/JAGS/
+
+###################################
+## Define variables names below ###
+###################################
+
+#Copy paste your data into a spreadsheet. Create 3 columns. On the first row, type the name of the variables. One column should contain the subject identifer (e.g., PPNR). The second row should contain the data from the dependent variable, and the third column should contain the grouping factor. Make sure there is no missing data (or emtpy cells underneath the data - check in .txt file).
+#Save your data as a .txt file - select Text (tab delimited)(*.txt).
+
+setwd("C:\\Users\\Daniel\\Dropbox\\ConfidenceIntervals")   # set working directory (i.e., the location of your data file).
+alldata <- read.delim("independent2.txt", header=TRUE) #Define the name of the tab delimited txt file in the working directory that contains 3 columns: a subject identifier and 2 columns of the data in the two within-subject conditions.
+
+alldata<-na.omit(alldata)#rows with missing data are removed
+
+#IMPORTANT: Do not use spaces in names. If variable names in your file include spaces, change the names.
+
+#Define names of the two groups, as specified by the grouping variable (e.g., 'high' and 'low', or '1' and '2'). Difference is computed as x-y (so reverse labels as desired) 
+xlabel<-"1" #name group 1 - needs to match the datafile!
+ylabel<-"0" #name group 2 - needs to match the datafile!
+
+#Define name (header) of the grouping column in your data file (e.g., condition, time).
+factorlabel<-"condition" #needs to match the datafile!
+#Define name of the dependent measure column in your data file (e.g., reaction times, self-reported happiness)
+measurelabel<-"answer"  #needs to match the datafile!
+#Below names for axis are used. These CAN include spaces.
+xlabelstring<-"anchoring condition" #define variables to be used for axis (can be replaced by "Any Label")
+ylabelstring<-"answer"  #define variables to be used for axis
+
+#Set your alpha level and confidence interval
+alpha<-0.05
+ConfInt<-0.95
+
+#For the Bayes Factor, specify which effect you expect. Standard to 0.5 (small effect). Change to 0.707 (medium effect) or 1 (large effect).
+BFrscale<-0.5
+
+#Alternative hypothesis: specify "two.sided" (for x<>y), "less" (for x<y) or "greater" (for x>y)
+H1<-"two.sided"
+
+#Calculating the Bayesian HDI and Bootstrapping the effect size for robust statistics can take quite some time (e.g., 30 minutes) in large sample sizes (e.g., N > 2000). If you are in a hurry, set the variable below to "YES", if you want the HDI and Bootstrapped ES, set it to "NO"
+InAHurry<-"NO"
+#If you get an error with large samples, try increasing bootstraps number below (e.g., to 5000 or 10000) and be patient (for robust d effect size calculation)
+bootstraps<-2000
+
+#############################################################
+### Changed the information above? Then hit 'Knit Word' #####
+#############################################################
+#################### Know your way around R? ################ 
+############ Feel free to change the script below ###########
+#############################################################
+
+options(scipen=20) #disable scientific notation for numbers smaller than x (i.e., 10) digits (e.g., 4.312e+22)
+
+x.alldata<-subset(alldata, alldata[[factorlabel]]==xlabel)
+y.alldata<-subset(alldata, alldata[[factorlabel]]==ylabel)
+x<-x.alldata[[measurelabel]]
+y<-y.alldata[[measurelabel]]
+
+
+
+#######################################################################
+#######################################################################
+########### Calculate CI for within and between #######################
+################ Scripts from Baguley, 2012 ###########################
+#######################################################################
+#######################################################################
+
+# slightly adapted from: https://seriousstats.wordpress.com/2012/03/18/cis-for-anova/
+
+bsci <- function(data.frame, group.var=match(factorlabel,names(alldata)), dv.var=match(measurelabel,names(alldata)), difference=FALSE, pooled.error=FALSE, conf.level=ConfInt) {
+  data <- subset(alldata, select=c(group.var, dv.var))
+	fact <- factor(data[[1]], levels = c(xlabel,ylabel))
+	dv <- data[[2]]
+	J <- nlevels(fact)
+	N <- length(dv)
+    ci.mat <- matrix(,J,3, dimnames=list(levels(fact), c('lower', 'mean', 'upper')))
+    ci.mat[,2] <- tapply(dv, fact, mean)
+    n.per.group <- tapply(dv, fact, length)
+    if(difference==TRUE) diff.factor= 2^0.5/2 else diff.factor=1
+    if(pooled.error==TRUE) {
+		for(i in 1:J) {
+			moe <- summary(lm(dv ~ 0 + fact))$sigma/(n.per.group[[i]])^0.5 * qt(1-(1-conf.level)/2,N-J) * diff.factor
+			ci.mat[i,1] <- ci.mat[i,2] - moe
+			ci.mat[i,3] <- ci.mat[i,2] + moe
+			}
+		}
+	if(pooled.error==FALSE) {
+		 for(i in 1:J) {
+		 	group.dat <- subset(data, data[1]==levels(fact)[i])[[2]]
+		 	moe <- sd(group.dat)/sqrt(n.per.group[[i]]) * qt(1-(1-conf.level)/2,n.per.group[[i]]-1) * diff.factor
+		 	ci.mat[i,1] <- ci.mat[i,2] - moe
+		 	ci.mat[i,3] <- ci.mat[i,2] + moe
+		}
+	}
+    ci.mat
+}
+
+
+#change matrix output from functions to dataframe, add CI from between, add labels and means 
+ci.sum<-as.data.frame(bsci(alldata, group.var=match(factorlabel,names(alldata)), dv.var=match(measurelabel,names(alldata)), difference=TRUE))
+ci.sum[[factorlabel]] <- c(xlabel,ylabel)
+ci.sum[[measurelabel]] <- c(mean(x),mean(y))
+
+##################################################################
+##################################################################
+######## PLOT DATA AND CHECK FOR OUTLIERS AND NORMALITY ##########
+##################################################################
+##################################################################
+
+#Boxplots give the median, 25% above and below the median (box) 
+#End of whiskers maximum and minimum value when excluding outliers (indicated by dots)
+
+require(ggplot2)
+
+ggplot(alldata, aes(factor(eval(parse(text=paste(factorlabel)))), eval(parse(text=paste(measurelabel))))) +
+  geom_boxplot()+
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+
+#Test normality (p<.05 means normality assumption is violated). Kolmogorov-Smirnov (K-S) test is often used, but no longer recommended 
+#In very large samples, tests for normality can result in significant results even when data is normally distributed. Look at a plot of the data.
+#In very small samples (e,g., n = 10), deviations from normality might not be detected, but this does not mean the data is normally distributed.
+
+require(PoweR)
+statcompute(21, x, levels = c(0.05)) #Shapiro-Wilk
+statcompute(6, x, levels = c(0.05)) #D'Agostino-Pearson
+statcompute(2, x, levels = c(0.05)) #Anderson-Darling
+(statcompute(7, x, levels = c(0.05))) #Jarque-Berra
+normalityrejectionsx<-(statcompute(21, x, levels = c(0.05))$decision + statcompute(6, x, levels = c(0.05))$decision + statcompute(2, x, levels = c(0.05))$decision + statcompute(7, x, levels = c(0.05))$decision)
+
+statcompute(21, y, levels = c(0.05)) #Shapiro-Wilk
+statcompute(6, y, levels = c(0.05)) #D'Agostino-Pearson
+statcompute(2, y, levels = c(0.05)) #Anderson-Darling
+(statcompute(7, y, levels = c(0.05))) #Jarque-Berra
+normalityrejectionsy<-(statcompute(21, y, levels = c(0.05))$decision + statcompute(6, y, levels = c(0.05))$decision + statcompute(2, y, levels = c(0.05))$decision + statcompute(7, y, levels = c(0.05))$decision)
+
+cat("The normality assumption for the ",xlabel," condition was rejected in ",normalityrejectionsx," out of 4 normality tests (Anderson-Darling, D'Agostino-Pearson, and Shapiro-Wilk).",sep="")
+cat("The normality assumption for the ",ylabel," condition was rejected in ",normalityrejectionsy," out of 4 normality tests (Anderson-Darling, D'Agostino-Pearson, and Shapiro-Wilk).",sep="")
+
+
+#Plot x, y
+#normal Q-Q plot for difference (mean dv). Points should fall on line
+require(HLMdiag)
+
+#density plot of y-data with normal distribution (red) and kernel desity plot (black)
+ggplot(y.alldata, aes(x=eval(parse(text=paste(measurelabel))))) + 
+  geom_histogram(colour="black", fill="grey", aes(y = ..density..)) +
+  stat_function(fun = dnorm, args = c(mean=mean(y), sd=sd(y)), size = 1, color = "red", lty=2) +
+  geom_density(fill=NA, colour="black", size = 1) +
+  xlab(ylabelstring) + theme_bw(base_size=14) 
+
+
+#density plot of y-data with normal distribution (red) and kernel desity plot (black)
+ggplot(x.alldata, aes(x=eval(parse(text=paste(measurelabel))))) + 
+  geom_histogram(colour="black", fill="grey", aes(y = ..density..)) +
+  stat_function(fun = dnorm, args = c(mean=mean(x), sd=sd(x)), size = 1, color = "red", lty=2) +
+  geom_density(fill=NA, colour="black", size = 1) +
+  xlab(ylabelstring) + theme_bw(base_size=14) 
+
+
+#Testing equality of variances
+
+require(car)
+pvalueLevene<-leveneTest(alldata[[measurelabel]] ~ as.factor(alldata[[factorlabel]]))$"Pr(>F)"[1:1]
+if (pvalueLevene < 0.05){equalvar<-"the assumption that variances are equal is rejected (consider reporting robust statistics)."}
+if (pvalueLevene >= 0.05){equalvar<-"the assumption that variances are equal is not rejected."}
+cat("Levene's test for equality of variances (p = ", round(pvalueLevene, digits=2),") indicates that ",equalvar,sep="")
+
+
+##########################################################################################
+##########################################################################################
+####################       Perform t-test, calculate ES (Cohen's d)   ####################
+##########################################################################################
+##########################################################################################
+
+sd1<-sd(x) #standard deviation of group 1
+sd2<-sd(y) #standard deviation of group 2
+n1 <- length(x) #number of individuals
+n2 <- length(y) #number of individuals
+m_diff<-mean(x)-mean(y)
+#Always performs Welch's t-test for unequal variances which is better than Levene's test followed by Student's t-test
+ttestresult<-t.test(x, y, alternative = H1, paired = FALSE, var.equal = FALSE, conf.level = ConfInt)
+tvalue<-ttestresult$statistic #store t-value from dependent t-test
+pvalue<-ttestresult$p.value #store p-value from dependent t-test
+CI_diff<-ttestresult$conf.int #store confidence interval of mean difference
+s_av <- sqrt((sd1^2+sd2^2)/2) #calculate average standard deviation for effect size calculation
+
+#Specify direction of difference
+if (mean(x)>mean(y)){direction<-"greater than"}
+if(mean(x)<mean(y)){direction<-"smaller than"}
+if(pvalue < alpha){surprising<-"surprising"}
+if(pvalue >= alpha){surprising<-" not surprising"}
+
+#Cohen's d
+require(MBESS)
+d<-smd(Mean.1= mean(x), Mean.2=mean(y), s.1=sd(x), s.2=sd(y), n.1=n1, n.2=n2, Unbiased=TRUE) #Use MBESS to calc d unbiased (Hedges g)
+if(is.finite(d)==FALSE){d<-smd(Mean.1= mean(x), Mean.2=mean(y), s.1=sd(x), s.2=sd(y), n.1=n1, n.2=n2, Unbiased=FALSE)}#In large samples, smd function gives error when Unbiased=TRUE. Difference in d and g no longer noticable, so then unbiased d is calculated.
+ci_l_d<-ci.smd(ncp = tvalue, n.1 = n1, n.2 = n2, conf.level=1-.05)$Lower.Conf.Limit.smd
+ci_u_d<-ci.smd(ncp = tvalue, n.1 = n1, n.2 = n2, conf.level=1-.05)$Upper.Conf.Limit.smd
+
+#Common Langaue Effect Size (McGraw & Wong, 1992)
+CL<-pnorm(abs(m_diff)/sqrt(sd1^2+sd2^2))
+
+#Interpret size of effect (last resort - use only if effect size cannot be compared to other relevant effects in the literature)
+if (abs(d) < 0.2){effectsize<-"tiny"}
+if (0.2 <= abs(d) && abs(d) < 0.5){effectsize<-"small"}
+if (0.5 <= abs(d) && abs(d) < 0.8){effectsize<-"medium"}
+if (abs(d) >= 0.8){effectsize<-"large"}
+
+#Robust Statistics
+#yuenbt calculates Yuen's (1974) adaptation of Welch's two-sample test with trimmed means and windsorized variances using a bootstrap method (see Keselman, Othman, Wilcox, & Fradette, 2004). 
+require(WRS)
+yuentest<-yuenbt(x,y, tr=0.2,alpha=1-ConfInt,nboot=599,side=T) #for details of this function, see Wilcox, 2012, p. 163).
+
+if(yuentest$p.value < alpha){surprising2<-"surprising"}
+if(yuentest$p.value >= alpha){surprising2<-" not surprising"}
+
+#Robust d (d_t) based on Algina, Keselman, and Penfield (2005). 
+require(bootES)
+if(InAHurry!="YES"){d_robust_sum<- bootES(alldata, R=bootstraps, data.col = measurelabel, group.col = factorlabel, contrast = c(xlabel, ylabel), effect.type = "akp.robust.d")}
+ifelse((InAHurry!="YES"),d_robust<-d_robust_sum$t0,d_robust<-"NOT CALCULATED DUE TO TIME CONSTRAINTS")
+ifelse((InAHurry!="YES"),d_robust_ci_l<-d_robust_sum$bounds[1:1],d_robust_ci_l<-"NOT CALCULATED")
+ifelse((InAHurry!="YES"),d_robust_ci_u<-d_robust_sum$bounds[2:2],d_robust_ci_u<-"NOT CALCULATED")
+
+#Interpret size of effect (last resort - use only if effect size cannot be compared to other relevant effects in the literature)
+
+if(InAHurry!="YES"){if (abs(d_robust) < 0.2){effectsize2<-"tiny"}}
+if(InAHurry!="YES"){if (0.2 <= abs(d_robust) && abs(d_robust) < 0.5){effectsize2<-"small"}}
+if(InAHurry!="YES"){if (0.5 <= abs(d_robust) && abs(d_robust) < 0.8){effectsize2<-"medium"}}
+if(InAHurry!="YES"){if (abs(d_robust) >= 0.8){effectsize2<-"large"}}
+if(InAHurry!="NO"){effectsize2<-"EFFECT SIZE NOT DETERMINED"}
+
+#BayesFactor
+require(BayesFactor)
+
+if(H1 == "two.sided"){
+  BF<-ttest.tstat(t = tvalue, n1 = n1, n2 = n2, rscale = BFrscale, simple=TRUE)   
+} else if (H1 == "greater"){
+  BF <- ttest.tstat(t = tvalue, n1 = n1, n2 = n2, nullInterval = c(0, Inf), rscale = BFrscale, simple = TRUE)
+} else if (H1 == "less"){
+  BF <- ttest.tstat(t = tvalue, n1 = n1, n2 = n2, nullInterval = c(-Inf, 0), rscale = BFrscale, simple = TRUE)
+}
+
+if(BF!=Inf){round(BF, digits=2)}
+if(BF==Inf){BF<-"practically infinitely high"}
+
+require(BEST) #To calculate HIB
+
+if(InAHurry!="YES"){BESTout<-BESTmcmc(x,y)}
+BESTdiff <- BESTout$mu1 - BESTout$mu2
+BESTHDI<-hdi(BESTdiff, credMass = 0.95)
+mean(BESTdiff)
+ifelse((InAHurry!="YES"),mu<-mean(BESTdiff),mu<-"NOT CALCULATED DUE TO TIME CONSTRAINTS")
+ifelse((InAHurry!="YES"),HDI_l<-BESTHDI[1],HDI_l<-"NOT CALCULATED")
+ifelse((InAHurry!="YES"),HDI_u<-BESTHDI[2],HDI_u<-"NOT CALCULATED")
+
+
+#Interpret strength of evidence of Bayes Factor following Jeffreys (1961)
+if (0.33 < BF && BF <= 1){evidence<-"anecdotal evidence for H0"}
+if (0.1 < BF && BF <=0.33){evidence<-"moderate evidence for H0"}
+if (0.03 < BF && BF <= 0.1){evidence<-"strong evidence for H0"}
+if (0.01 < BF && BF <= 0.03){evidence<-"very strong evidence for H0"}
+if (BF <=0.01){evidence<-"decisive evidence for H0"}
+if (1 < BF && BF <= 3){evidence<-"anecdotal evidence for H1"}
+if (3 < BF && BF <=10){evidence<-"moderate evidence for H1"}
+if (10 < BF && BF <= 30){evidence<-"strong evidence for H1"}
+if (30 < BF && BF <= 100){evidence<-"very strong evidence for H1"}
+if (BF > 100){evidence<-"decisive evidence for H1"}
+
+```
+
+
+This document summarizes a comparison between two independent groups, comparing `r ylabelstring` between the `r xlabel` and `r ylabel` conditions. This script can help to facilitate the (re-)analysis of data, and the word-output might prevent copy-paste errors when transferring results to a manuscript.
+
+Researchers can base their statistical inferences on Frequentist or robust statistics, as well as on Bayesian statistics. Effect sizes and their confidence intervals are provided, thus inviting researchers to interpret their data from multiple perspectives. 
+
+Checking for outliers, normality, equality of variances.
+------
+
+##Outliers
+
+Boxplots can be used to identify outliers. Boxplots give the median (thick line), and 25% of the data above and below the median (box). End of whiskers are the maximum and minimum value when excluding outliers (whih are indicated by dots). 
+
+```{r, echo=FALSE, warning=FALSE}
+
+ggplot(alldata, aes(factor(eval(parse(text=paste(factorlabel)))), eval(parse(text=paste(measurelabel))))) +
+  geom_boxplot()+
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+
+```
+
+##Normality assumption
+
+The independent *t*-test assumes that scores in both groups (`r xlabel` and `r ylabel`) are normally distributed. If the normality assumption is violated, the Type 1 error rate of the test is no longer controlled, and can substantially increase beyond the chosen significance level. Formally, a normality test based on the data is incorrect, and the normality assumption should be tested on additional (e.g., pilot) data. Nevertheless, a two-step procedure (testing the data for normality, and using alternatives for the traditional *t*-test if normality is violated, seems to work well (see [Rochon, Gondan, & Kieser, 2012](http://www.biomedcentral.com/1471-2288/12/81)).
+
+###Tests for normality
+
+Four tests for normality are reported below for both groups. [Yap and Sim (2011, p. 2153)](http://www.tandfonline.com/doi/pdf/10.1080/00949655.2010.520163) recommend: "If the distribution is symmetric with low kurtosis values (i.e. symmetric short-tailed distribution), then the D'Agostino-Pearson and Shapiro-Wilkes tests have good power. For symmetric distribution with high sample kurtosis (symmetric long-tailed), the researcher can use the JB, Shapiro-Wilkes, or Anderson-Darling test." The Kolmogorov-Smirnov (K-S) test is often used, but no longer recommended, and not included here.
+
+If a normality test rejects the assumptions that the data is normally distributed (with *p* < .05) non-parametric or robust statistics have to be used (robust analyses are provided below).  
+
+**The normality assumption was rejected in `r normalityrejectionsx` out of 4 normality tests for the `r xlabel` condition, and in `r normalityrejectionsy` out of 4 normality tests for the `r ylabel` condition.**
+
+Test Name  | *p*-value `r xlabel`  | *p*-value `r ylabel` 
+------------- | -------------- | -------------
+Shapiro-Wilk  | *p* `r ifelse(statcompute(21, x, levels = c(0.05))$pvalue>0.001," = ", " < ")` `r ifelse(statcompute(21, x, levels = c(0.05))$pvalue>0.001, round(statcompute(21, x, levels = c(0.05))$pvalue, digits=3), "0.001")`  |   *p* `r ifelse(statcompute(21, y, levels = c(0.05))$pvalue>0.001," = ", " < ")` `r ifelse(statcompute(21, y, levels = c(0.05))$pvalue>0.001, round(statcompute(21, y, levels = c(0.05))$pvalue, digits=3), "0.001")`   
+D'Agostino-Pearson  | *p* `r ifelse(statcompute(6, x, levels = c(0.05))$pvalue>0.001," = ", " < ")` `r ifelse(statcompute(6, x, levels = c(0.05))$pvalue>0.001, round(statcompute(6, x, levels = c(0.05))$pvalue, digits=3), "0.001")` |  *p* `r ifelse(statcompute(6, y, levels = c(0.05))$pvalue>0.001," = ", " < ")` `r ifelse(statcompute(6, y, levels = c(0.05))$pvalue>0.001, round(statcompute(6, y, levels = c(0.05))$pvalue, digits=3), "0.001")`
+Anderson-Darling  | *p* `r ifelse(statcompute(2, x, levels = c(0.05))$pvalue>0.001," = ", " < ")` `r ifelse(statcompute(2, x, levels = c(0.05))$pvalue>0.001, round(statcompute(2, x, levels = c(0.05))$pvalue, digits=3), "0.001")`  | *p* `r ifelse(statcompute(2, y, levels = c(0.05))$pvalue>0.001," = ", " < ")` `r ifelse(statcompute(2, y, levels = c(0.05))$pvalue>0.001, round(statcompute(2, y, levels = c(0.05))$pvalue, digits=3), "0.001")`    
+Jarque-Berra  | *p* `r ifelse(statcompute(7, x, levels = c(0.05))$pvalue>0.001," = ", " < ")` `r ifelse(statcompute(7, x, levels = c(0.05))$pvalue>0.001, round(statcompute(7, x, levels = c(0.05))$pvalue, digits=3), "0.001")` |   *p* `r ifelse(statcompute(7, y, levels = c(0.05))$pvalue>0.001," = ", " < ")` `r ifelse(statcompute(7, y, levels = c(0.05))$pvalue>0.001, round(statcompute(7, y, levels = c(0.05))$pvalue, digits=3), "0.001")`
+
+In very large samples (when the test for normality has close to 100% power) tests for normality can result in significant results even when data is normally distributed, based on minor deviations from normality. In very small samples (e.g., n = 10), deviations from normality might not be detected, but this does not mean the data is normally distributed.  Always look at a plot of the data in addition to the test results.
+
+###Histogram, kernel density plot (black line) and normal distribution (red line) of difference scores
+
+The density (or proportion of the observations) is plotted on the y-axis. The grey bars are a histogram of the scores in the two groups. Judging whether data is normally distributed on the basis of a histogram depends too much on the number of bins (or bars) in the graph. A kernel density plot (a non-parametric technique for density estimation) provides an easier way to check the normality of the data by comparing the shape of the density plot (the black line) with a normal distribution (the red dotted line, based on the observed mean and standard deviation). For independent *t*-tests, the dependent variables in both conditions should be normally distributed.
+
+```{r, echo=FALSE, message=FALSE, fig.width=6.3, dpi=300}
+
+require(ggplot2)
+require(gtable)
+
+#density plot with normal distribution (red) and kernel desity plot
+ggplot(x.alldata, aes(x=eval(parse(text=paste(measurelabel)))))  + 
+  geom_histogram(colour="black", fill="grey", aes(y = ..density..)) +
+  stat_function(fun = dnorm, args = c(mean=mean(x), sd=sd(x)), size = 1, color = "red", lty=2) +
+  geom_density(fill=NA, colour="black", size = 1) +
+  xlab(measurelabel)  + ggtitle(xlabel)+ theme_bw(base_size=14) 
+
+ggplot(y.alldata, aes(x=eval(parse(text=paste(measurelabel)))))  + 
+  geom_histogram(colour="black", fill="grey", aes(y = ..density..)) +
+  stat_function(fun = dnorm, args = c(mean=mean(y), sd=sd(y)), size = 1, color = "red", lty=2) +
+  geom_density(fill=NA, colour="black", size = 1) +
+  xlab(measurelabel)  + ggtitle(ylabel)+ theme_bw(base_size=14) 
+
+```
+
+Q-Q-plot
+------
+
+In the Q-Q plots for the `r xlabel` and `r ylabel` conditions the points should fall on the line. Deviations from the line in the upper and lower quartiles indicates the tails of the distributions are thicker or thinner than in the normal distribution. An S-shaped curve with a dip in the middle indicates data is left-skewed (more values to the right of the distribution), while a bump in the middle indicates data is right-skewed (more values to the left of the distribution). For interpretation examples, see [here](http://emp.byui.edu/BrownD/Stats-intro/dscrptv/graphs/qq-plot_egs.htm).
+
+```{r, echo=FALSE, message=FALSE,  fig.width=6.3, dpi=300}
+
+require(gridExtra)
+
+#Q-Q plot
+qq1<-ggplot_qqnorm(x, line = "quantile") + ggtitle(xlabel) + theme_bw(base_size=14)
+qq2<-ggplot_qqnorm(y, line = "quantile") + ggtitle(ylabel) + theme_bw(base_size=14)
+grid.arrange(qq1, qq2, ncol=2)
+
+
+
+```
+
+##Equal variances assumption
+
+In addition to the normality assumption, a second assumption of Student's *t*-test is that variances in both groups are equal. As [Ruxton (2006)](http://beheco.oxfordjournals.org/content/17/4/688.full) explains: "If you want to compare the central tendency of 2 populations based on samples of unrelated data, then the unequal variance (or Welch's) *t*-test should always be used in preference to the Student's *t*-test or Mann-Whitney U test." This is preferable to the more traditional two-step approach of first testing equality o variances using Levene's test, and then deciding between Student's and Welch's *t*-test. The degrees of freedom for Welch's *t*-test is typically not a round number.
+
+###Levene's test
+
+The equality of variances assumption is typically examined with Levene's test, although as explained above, Welch's test is used below regardless of the outcome. Levene's test for equality of variances (*p* `r ifelse(pvalueLevene>0.001," = ", " < ")` `r ifelse(pvalueLevene>0.001,round(pvalueLevene, digits=3), "0.001")`) indicates that `r equalvar`
+
+Comparing the two sets of data
+------
+
+###Frequentist statistics
+
+A *p*-value is the probability of obtaining the observed result, or a more extreme result, assuming the null-hypothesis is true. It is not the probability that the null-hypothesis or the alternative hypothesis is true (for such inferences, see Bayesian statistics below). In repeated sampling, 95% of future 95% confidence intervals can be expected to contain the true population paramters (e.g, the mean difference or the effect size). Confidence intervals are not a statement about the probability that a single confidence interval contains the true population parameter, but a statement about the probability that future confidence intervals will contain the true population parameter. Hedges' *g* (also referred to as *d*~unbiased~, see Borenstein, Hedges, Higgins, & Rothstein, 2009) is provided as best estimate of Cohen's *d*, but the best estimate of the confidence interval is based on *d*~av~ (as recommended by Cumming, 2012). Hedges's *g* and the 95% CI around the effect size are calculated using the MBESS package by ([Kelley (2007](http://dx.doi.org/10.3758/BF03192993)). The common language effect size expresses the probability that in any random pairing of two observations from both groups, the observation from one group is higher than the observation from the other group, see [McGraw & Wong, 1992](http://dx.doi.org/10.1037/0033-2909.111.2.361). Default interpretations of the size of an effect as provided here should only be used as a last resort, and it is preferable to interpret the size of the effect in relationto other effects in the literature, or in terms of it's practical significance.
+
+####Results
+
+The mean `r ylabelstring` (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round(sd1, digits = 2)`) of participants in the `r xlabel` condition was `r direction` the mean (*M* = `r round(mean(y), digits = 2)`, *SD* = `r round(sd2,digits=2)`) of participants in the `r ylabel` condition. The difference between measurements is (*M* = `r round(m_diff, digits=2)`), 95% CI = [`r round(CI_diff[1:1], digits=2)`;`r round(CI_diff[2:2],digits=2)`], *t*(`r round(ttestresult$parameter, digits=2)`) = `r round(tvalue, digits=2)`, *p* `r ifelse(pvalue>0.001," = ", " < ")` `r ifelse(pvalue>0.001,formatC(round(pvalue, digits=3),digits=3, format="f"), "0.001")`, Hedges' *g* = `r round(d, digits=2)`, 95% CI [`r round(ci_l_d, digits=2)`;`r round(ci_u_d, digits=2)`]. This can be considered a `r effectsize` effect. The observed data is `r surprising` under the assumption that the null-hypothesis is true. The Common Language effect size (McGraw & Wong, 1992) indicates that the likelihood that a persons `r ylabelstring` in the `r xlabel` condition is `r direction` the `r ylabelstring` in the `r ylabel` condition is `r round(100*CL, digits=0)`%.
+
+###Bayesian statistics
+
+Bayesian statistics can quantify the relative evidence in the data for either the alternative hypothesis or the null hypothesis. Bayesian statistics require priors to be defined. In the Bayes Factor calculation reported below, a non-informative Jeffreys prior is placed on the variance of the normal population, while a Cauchy prior is placed on the standardized effect size (for details, [see Morey & Rouder, 2011](http://drsmorey.org/bibtex/upload/Morey:Rouder:2011.pdf)). Calculations are performed using the [BayesFactor package](http://cran.r-project.org/web/packages/BayesFactor/BayesFactor.pdf). For a detailed explanation of an independent *t*-test, see [this post by Richard Morey](http://bayesfactor.blogspot.nl/2014/02/bayes-factor-t-tests-part-2-two-sample.html). Default interpretations of the strength of the evidence are provided but should not distract from the fact that strength of evidence is a continuous function of the Bayes Factor. A second popular Bayesian approach relies on estimation, and the mean posterior and 95% higest density intervals (HDI) are calculated following recommendations by [Kruschke, (2013)](http://www.indiana.edu/~kruschke/BEST/BEST.pdf) based on vague priors. According to Kruschke (2010, p. 34) "The HDI indicates which points of a distribution we believe in most strongly." "The width of the HDI is another way of measuring uncertainty of beliefs. If the HDI is wide, then beliefs are uncertain. If the HDI is narrow, then beliefs are fairly certain."
+
+####Results
+
+The JZS BF~10~ (with r scale = `r BFrscale`) = `r BF`. This indicates the data are `r BF` (or log(e) BF =`r round(log(BF), digits=2)`) times more likely under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, HDI = `r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`, `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`.
+
+###Robust statistics
+
+Values in the tails of the distribution can have a strong influence on the mean. If values in the tails differ from a normal distribution, the power of a test is reduced and the effect size estimates are biased, even under slight deviations from normality (Wilcox, 2012). One way to deal with this problem is to remove the tails in the analysis by using *trimmed means*. A recommended percentage of trimming is 20% from both tails (Wilcox, 2012), which means inferences are based on the 60% of the data in the middle of the distribution. Yuen's method can be used to compare trimmed means (when the percentage of trimming is 0%, Yuen's method reduces to Welch's *t*-test). Here, a bootstrapped version of Yuen's (1974) adaptation of Welch's two-sample test with trimmed means and windsorized variances is used that returns symmetric confidence intervals (see Keselman, Othman, Wilcox, & Fradette, 2004). Robust effect sizes and their confidence intervals are calculated using bootES by [Kirby and Gerlanc (2013)](http://web.williams.edu/Psychology/Faculty/Kirby/bootes-kirby-gerlanc-in-press.pdf) following Algina, Keselman, and Penfield (2005).
+
+####Results
+
+Using the Yuen-Welch method for comparing 20% trimmed means showed the mean difference in `r ylabelstring` between conditions is (*M* = `r round(yuentest$est.dif, digits = 2)`, 95% symmetric CI [`r round(yuentest$ci[1], digits = 2)`;`r round(yuentest$ci[2], digits = 2)`]), *t* = `r round(yuentest$test.stat, digits = 2)`, *p* `r ifelse(yuentest$p.value>=0.001," = ", " < ")` `r ifelse(yuentest$p.value>=0.001,formatC(round(yuentest$p.value, digits = 2)), "0.001")`, Robust *d~t~* = `r ifelse(InAHurry!="YES",round(d_robust, digits = 2),"NOT CALCULATED")`,  95% CI = [`r ifelse(InAHurry!="YES",round(d_robust_ci_l, digits = 2), "NOT CALCULATED")`;`r ifelse(InAHurry!="YES",round(d_robust_ci_u, digits = 2), "NOT CALCULATED")`]). The observed data is `r surprising2` under the assumption that the null-hypothesis is true. This can be considered a `r effectsize2` effect.
+
+Plotting data
+------
+
+**Graph examples. In the code, you can turn different layers on and off, and change their properties by adding or removing # in front of a line of code. Displays violin plot (rotated kernal density plots) and 95% CI bars, individual data-points, or simple bar graphs. **
+
+###*Figure 1*. Means and 95% CI, and violin plot
+
+```{r, echo=FALSE}
+#Example 1: means and 95% CI 
+ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(parse(text=paste(measurelabel))), group=1)) +
+  #  geom_bar(position=position_dodge(.9), colour="black", stat="identity", fill="white") +
+  geom_errorbar(width=.05, size=1, aes(ymin=lower, ymax=upper)) +
+  geom_point(size=2) +
+  #  geom_point(data=alldata.long) +
+  geom_violin(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), alpha=0) +
+#  geom_boxplot(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), width=0.1) +
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+
+```
+
+###*Figure 2*. Bar chart displaying means, individual datapoints, and 95% CI
+
+```{r, echo=FALSE}
+
+
+#Example 2: bar chart with individual data point and 95% CI
+ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(parse(text=paste(measurelabel))), group=1)) +
+  geom_bar(position=position_dodge(.9), colour="black", stat="identity", fill="white") +
+  geom_errorbar(width=.1, size=0.1, aes(ymin=lower, ymax=upper)) +
+#  geom_point(size=4) +
+  geom_point(data=alldata, alpha=0.2) +
+#  geom_violin(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), alpha=0) +
+#  geom_boxplot(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), width=0.1) +
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+```
+
+###*Figure 3*. Bar chart displaying 95% CI
+
+```{r, echo=FALSE}
+
+
+#Example 3: bar chart with 95% CI
+ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(parse(text=paste(measurelabel))), group=1)) +
+#  geom_bar(position=position_dodge(.9), colour="black", stat="identity", fill="white") +
+#  geom_boxplot(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), width=0.1) +
+  geom_errorbar(width=.2, size=0.1, aes(ymin=lower, ymax=upper)) +
+# geom_point(size=4) +
+# geom_point(data=alldata) +
+# geom_violin(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), alpha=0) +
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+```
+
+
+###References
+
+This script uses the *reshape2* package to convert data from wide to long format, the *PoweR* package to perform the normality tests, *HLMdiag* to create the QQplots, *ggplot2* for all plots, *gtable* and *gridExtra* to combine multiple plots into one, *car* to perform Levene's test, *MBESS* to calculate effect sizes and their confidence intervals, *WRS* for the robust statistics, *BayesFactor* for the bayes factor, and *BEST* to calculate the Bayesian highest density interval.
+
+Auguie, B. (2012). *gridExtra: functions in Grid graphics*. R package version 0.9.1, URL: http://CRAN.R-project.org/package=gridExtra.
+
+Baguley, T. (2012). Calculating and graphing within-subject confidence intervals for ANOVA. *Behavior research methods*, *44*, 158-175.
+
+Borenstein, M., Hedges, L. V., Higgins, J. P., & Rothstein, H. R. (2009). *Introduction to meta-analysis*. Hoboken, NJ: Wiley.
+
+Box, G. E. P. (1953). Non-normality and tests on variance. *Biometrika*, *40*, 318-335.
+
+Cumming, G. (2012). *Understanding the new statistics: Effect sizes, confidence intervals, and meta-analysis*. New York: Routledge.
+
+Cohen, J. (1988). *Statistical power analysis for the behavioral sciences (2nd ed.)*. Hillsdale, NJ: Erlbaum.
+
+Fox, J. & Weisberg, S. (2011). *An R Companion to Applied Regression, Second edition*. Sage, Thousand Oaks CA. URL: http://socserv.socsci.mcmaster.ca/jfox/Books/Companion.
+
+Kelley, K. (2005). The effects of nonnormal distributions on confidence intervals around the standardized mean difference: Bootstrap and parametric confidence intervals. *Educational and Psychological Measurement*, *65*, 51-69.
+
+Kelley, K. (2007). Confidence intervals for standardized effect sizes: Theory, application, and implementation. *Journal of Statistical Software*, *20*, 1-24.
+
+Kelley, K. & Lai, K. (2012). *MBESS. R package version 3.3.3*, URL:
+http://CRAN.R-project.org/package=MBESS.
+
+Kruschke, J. (2010). *Doing Bayesian data analysis: A tutorial introduction with R*. Academic Press.
+
+Kruschke, J. K. (2013). Bayesian estimation supersedes the t-test. *Journal of Experimental Psychology: General*, *142*, 573-603.
+
+Kruschke, J. K., & Meredith, M. (2014). *BEST: Bayesian Estimation Supersedes the t-test*. R package version 0.2.2, URL: http://CRAN.R-project.org/package=BEST.
+
+Lakens, D. (2013). Calculating and reporting effect sizes to facilitate cumulative science: a practical primer for t-tests and ANOVAs. *Frontiers in psychology*, *4*.
+
+Loy, A., & Hofmann, H. (2014). HLMdiag: A Suite of Diagnostics for Hierarchical Linear Models. R. Journal of Statistical Software, 56, pp. 1-28. URL: http://www.jstatsoft.org/v56/i05/.
+
+McGraw, K. O., & Wong, S. P. (1992). A common language effect size statistic. *Psychological Bulletin*, *111*, 361-365.
+
+Micheaux, PLd. & Tran, V. (2012). PoweR. URL: http://www.biostatisticien.eu/PoweR/.
+
+Morey, R. D. (2008). Confidence intervals from normalized data: A correction to Cousineau (2005). *Tutorial in Quantitative Methods for Psychology*, *4*, 61-64.
+
+Morey, R. D. & Rouder, J. N. (2011). Bayes Factor Approaches for Testing Interval Null Hypotheses. *Psychological Methods*, *16*, 406-419
+
+Morey R and Rouder J (2015). *BayesFactor: Computation of Bayes Factors for Common Designs*. R package version 0.9.11-1, URL: http://CRAN.R-project.org/package=BayesFactor.
+
+Smithson, M. (2001). Correct confidence intervals for various regression effect sizes and parameters: The importance of noncentral distributions in computing intervals. *Educational and Psychological Measurement*, *61*, 605-632.
+
+Rouder, J. N., Speckman, P. L., Sun, D., Morey, R. D., & Iverson, G. (2009). Bayesian t-tests for accepting and rejecting the null hypothesis. *Psychonomic Bulletin & Review*, *16*, 752-760
+
+Wickham, H. (2007). Reshaping Data with the reshape Package. *Journal of Statistical Software*, *21*, pp. 1-20. URL: http://www.jstatsoft.org/v21/i12/.
+
+Wickham, H. (2009). *ggplot2: elegant graphics for data analysis*. Springer New York. ISBN 978-0-387-98140-6, URL: http://had.co.nz/ggplot2/book.
+
+Wickham, H. (2012). *gtable: Arrange grobs in tables*. R package version 0.1.2, URL: http://CRAN.R-project.org/package=gtable.
+
+Wilcox, R. R. (2012). *Introduction to robust estimation and hypothesis testing*. Academic Press.
+
+Wilcox, R. R., & Schönbrodt, F. D. (2015). *The WRS package for robust statistics in R (version 0.27.5)*. URL: https://github.com/nicebread/WRS.
+
+
+###Apendix A: Data & Session Information
+
+
+```{r}
+alldata
+
+sessionInfo()
+```
