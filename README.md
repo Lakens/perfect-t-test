@@ -1,3 +1,5 @@
+# THIS IS A BETA VERSION - ONLY USE FOR TESTING PURPOSES
+
 # perfect-t-test
 
 Correctly comparing two groups is remarkably challenging. When performing a *t*-test researchers rarely manage to follow all recommendations that statisticians have made over the years. For example, it is still uncommon to see confidence intervals around effect sizes, robust statistics when the normality assumption is violated, or Welch's t-test instead of Student's t-test when sample sizes are unequal, or Bayesian statistics. Researchers should test whether their data is normally distributed, but it is unclear how often people actually do this, or whether they use the best tests for normality. Even though it has been repeatedly suggested that researchers should improve the way they report statistics, progress is slow.
