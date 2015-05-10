@@ -4,7 +4,8 @@ author: "Daniel Lakens, D.Lakens@tue.nl"
 output: word_document
 ---
 
-```{r, echo=FALSE, include=FALSE}
+```{r, echo=FALSE, include=FALSE, cache = FALSE}
+knitr::opts_chunk$set(error = TRUE)
 
 ####################################
 #######  How to use ################
@@ -19,7 +20,7 @@ output: word_document
 ####################################
 
 
-#install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "multicore", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools", "rmarkdown","gmodels", "HLMdiag", "car", "gridExtra", "BootES", "BEST", "plyr", "reshape2"))
+#install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "multicore", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools", "rmarkdown","gmodels", "HLMdiag", "car", "gridExtra", "bootES", "BEST", "plyr", "reshape2"))
 
 #Installation of the robust statistics package: Remove # in front of each of 4 lines below and run the code
 
@@ -37,7 +38,7 @@ output: word_document
 #Copy paste your data into a spreadsheet. Create 3 columns. On the first row, type the name of the variables. One column should contain the subject identifer (e.g., PPNR). The second row should contain the data from the dependent variable, and the third column should contain the grouping factor. Make sure there is no missing data (or emtpy cells underneath the data - check in .txt file).
 #Save your data as a .txt file - select Text (tab delimited)(*.txt).
 
-setwd("C:/")   # set working directory (i.e., the location of your data file).
+#Make sure the data file and the R markdown file are in the same folder.
 alldata <- read.delim("demo_independent.txt", header=TRUE) #Define the name of the tab delimited txt file in the working directory that contains 3 columns: a subject identifier and 2 columns of the data in the two within-subject conditions.
 
 alldata<-na.omit(alldata)#rows with missing data are removed
