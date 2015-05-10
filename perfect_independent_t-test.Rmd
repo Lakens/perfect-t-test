@@ -275,9 +275,9 @@ if(BF==Inf){BF<-"practically infinitely high"}
 require(BEST) #To calculate HIB
 
 if(InAHurry!="YES"){BESTout<-BESTmcmc(x,y)}
-BESTdiff <- BESTout$mu1 - BESTout$mu2
-BESTHDI<-hdi(BESTdiff, credMass = 0.95)
-mean(BESTdiff)
+if(InAHurry!="YES"){BESTdiff <- BESTout$mu1 - BESTout$mu2}
+if(InAHurry!="YES"){BESTHDI<-hdi(BESTdiff, credMass = 0.95)}
+if(InAHurry!="YES"){mean(BESTdiff)}
 ifelse((InAHurry!="YES"),mu<-mean(BESTdiff),mu<-"NOT CALCULATED DUE TO TIME CONSTRAINTS")
 ifelse((InAHurry!="YES"),HDI_l<-BESTHDI[1],HDI_l<-"NOT CALCULATED")
 ifelse((InAHurry!="YES"),HDI_u<-BESTHDI[2],HDI_u<-"NOT CALCULATED")
