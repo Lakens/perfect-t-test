@@ -19,6 +19,7 @@ knitr::opts_chunk$set(error = TRUE)
 ######  FIRST TIME ONLY ############
 ####################################
 
+#Remove # in front of the line below and run the code. Replace the # after installing the packages, otherwise the R markdown script will give errors.
 
 #install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "multicore", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools", "rmarkdown","gmodels", "HLMdiag", "car", "gridExtra", "bootES", "BEST", "plyr", "reshape2"))
 
@@ -29,7 +30,7 @@ knitr::opts_chunk$set(error = TRUE)
 #install_github("mrxiaohe/WRScpp")
 #install_github("nicebread/WRS", subdir="pkg")
 
-#Download and install JAGS to clculate Bayesian HDI: http://sourceforge.net/projects/mcmc-jags/files/JAGS/
+#Download and install JAGS to calculate Bayesian HDI: http://sourceforge.net/projects/mcmc-jags/files/JAGS/
 
 ###################################
 ## Define variables names below ###
@@ -43,7 +44,7 @@ alldata <- read.delim("demo_independent.txt", header=TRUE) #Define the name of t
 
 alldata<-na.omit(alldata)#rows with missing data are removed
 
-#IMPORTANT: Do not use spaces in names. If variable names in your file include spaces, change the names.
+#IMPORTANT: Do not use spaces, hyphens, or other symbols in names. If variable names in your file include spaces, change the names.
 
 #Define names of the two groups, as specified by the grouping variable (e.g., 'high' and 'low', or '1' and '2'). Difference is computed as x-y (so reverse labels as desired) 
 xlabel<-"high" #name group 1 - needs to match the datafile (R is case-sensitive)!

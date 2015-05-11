@@ -16,7 +16,7 @@ output: word_document
 ######  FIRST TIME ONLY ############
 ####################################
 
-#First time user? Install packages below by removing # and running the install commands, then install WRS for the Wilcox robust statistics functions.
+#Remove # in front of the line below and run the code. Replace the # after installing the packages, otherwise the R markdown script will give errors.
 
 #install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "multicore", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools","rmarkdown","gmodels", "HLMdiag", "car", "gridExtra", "bootES", "BEST", "plyr", "reshape2"))
 
@@ -27,7 +27,7 @@ output: word_document
 #install_github("mrxiaohe/WRScpp")
 #install_github("nicebread/WRS", subdir="pkg")
 
-#Download and install JAGS to clculate Bayesian HDI: http://sourceforge.net/projects/mcmc-jags/files/JAGS/
+#Download and install JAGS to calculate Bayesian HDI: http://sourceforge.net/projects/mcmc-jags/files/JAGS/
 
 ###################################
 ## Define variables names below ###
@@ -41,7 +41,7 @@ alldata <- read.delim("demo_dependent.txt", header=TRUE) #Define the name of the
 
 alldata<-na.omit(alldata)#rows with missing data are removed
 
-#IMPORTANT: Do not use spaces in names. If variable names in your file include spaces, change the names.
+#IMPORTANT: Do not use spaces, hyphens, or other symbols in names. If variable names in your file include spaces, change the names.
 
 #Define names of the two columns in alldata you want to compare. Difference is computed as x-y (so reverse labels as desired) 
 xlabel<-"Congruent"  #name dependent variable 1 - needs to match the datafile!
@@ -70,7 +70,7 @@ BFrscale<-0.5
 #Alternative hypothesis: specify "two.sided" (for x<>y), "less" (for x<y) or "greater" (for x>y)
 H1<-"two.sided"
 
-#Calculating the Bayesian HDI and Bootstrapping the effect size for robust statistics can take quite some time (e.g., 30 minutes) in large sample sizes. If you are in a hurry, set the variable below to "YES", if you want the HDI and Bootstrapped ES, set it to "NO"
+#Calculating the Bayesian HDI can take quite some time (e.g., 30 minutes) in large sample sizes. If you are in a hurry, set the variable below to "YES", if you want the HDI, set it to "NO"
 InAHurry<-"NO"
 
 #############################################################
