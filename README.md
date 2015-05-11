@@ -9,7 +9,7 @@ Here, I propose a way to speed up the widespread adoption of the state-of-the-ar
 To use this script, **first [install R](http://cran.r-project.org/)**. Then, **[install R studio](http://www.rstudio.com/products/rstudio/download/)**. Then, **[download the R markdown files](https://github.com/Lakens/perfect-t-test/archive/master.zip)**. In the .zip file, there is one script for dependent t-tests, and one for independent t-tests. If you use the script for the first time, also **[install the latest version of JAGS](http://sourceforge.net/projects/mcmc-jags/files/JAGS/)**. Open either of the two .Rmd files, depending on the test you want to perform. You need to make sure you have all the required packages installed. This can be accomplished by running the following code:
 
 ```{r}
-install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "multicore", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools","rmarkdown","gmodels", "HLMdiag", "car", "gridExtra", "bootES", "BEST", "plyr", "reshape2"))
+install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools","rmarkdown","gmodels", "HLMdiag", "car", "gridExtra", "bootES", "BEST"))
 
 install.packages("devtools")
 library("devtools")
