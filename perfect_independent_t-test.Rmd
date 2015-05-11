@@ -46,13 +46,13 @@ alldata<-na.omit(alldata)#rows with missing data are removed
 #IMPORTANT: Do not use spaces in names. If variable names in your file include spaces, change the names.
 
 #Define names of the two groups, as specified by the grouping variable (e.g., 'high' and 'low', or '1' and '2'). Difference is computed as x-y (so reverse labels as desired) 
-xlabel<-"high" #name group 1 - needs to match the datafile!
-ylabel<-"low" #name group 2 - needs to match the datafile!
+xlabel<-"high" #name group 1 - needs to match the datafile (R is case-sensitive)!
+ylabel<-"low" #name group 2 - needs to match the datafile (R is case-sensitive)!
 
 #Define name (header) of the grouping column in your data file (e.g., condition, time).
-factorlabel<-"condition" #needs to match the datafile!
+factorlabel<-"condition" #needs to match the datafile (R is case-sensitive)!
 #Define name of the dependent measure column in your data file (e.g., reaction times, self-reported happiness)
-measurelabel<-"answer"  #needs to match the datafile!
+measurelabel<-"answer"  #needs to match the datafile (R is case-sensitive)!
 #Below names for axis are used. These CAN include spaces.
 xlabelstring<-"anchoring condition" #define variables to be used for axis (can be replaced by "Any Label")
 ylabelstring<-"answer"  #define variables to be used for axis
