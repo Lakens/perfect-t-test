@@ -11,7 +11,7 @@ knitr::opts_chunk$set(error = TRUE)
 #######  How to use ################
 ####################################
 
-# 1) Install the packages and software specified below. 
+# 1) Install the packages and software specified below. (consider also updating all installed packages by chosing Update on the Packages tab)
 # 2) Define the variable names, change the default settings, if desired
 # 3) Hit Knit Word! (Output takes about a two minutes, mainly do bootstrapping the robust effect size and calculating the Bayesian Highest Density Iinterval)
 
@@ -36,11 +36,11 @@ knitr::opts_chunk$set(error = TRUE)
 ## Define variables names below ###
 ###################################
 
-#Copy paste your data into a spreadsheet. Create 3 columns. On the first row, type the name of the variables. One column should contain the subject identifer (e.g., PPNR). The second row should contain the data from the dependent variable, and the third column should contain the grouping factor. Make sure there is no missing data (or emtpy cells underneath the data - check in .txt file).
+#Copy paste your data into a spreadsheet. Create 3 columns. On the first row, type the name of the variables. One column should contain the subject identifer (e.g., PPNR). The second column should contain the data from the dependent variable, and the third column should contain the grouping factor. Make sure there is no missing data (or emtpy cells underneath the data - check in .txt file).
 #Save your data as a .txt file - select Text (tab delimited)(*.txt).
 
 #Make sure the data file and the R markdown file are in the same folder.
-alldata <- read.delim("demo_independent.txt", header=TRUE) #Define the name of the tab delimited txt file in the working directory that contains 3 columns: a subject identifier and 2 columns of the data in the two within-subject conditions.
+alldata <- read.delim("demo_independent.txt", header=TRUE) #Define the name of the tab delimited txt file in the working directory that contains 2 columns: an independent (grouping) variable and a dependent variable.
 
 alldata<-na.omit(alldata)#rows with missing data are removed
 
@@ -82,12 +82,13 @@ bootstraps<-2000
 
 options(scipen=20) #disable scientific notation for numbers smaller than x (i.e., 10) digits (e.g., 4.312e+22)
 
+#Remove other conditions in your datafile (only keep groups specified above)
+alldata<-subset(alldata, alldata[[factorlabel]]==xlabel|alldata[[factorlabel]]==ylabel)
+
 x.alldata<-subset(alldata, alldata[[factorlabel]]==xlabel)
 y.alldata<-subset(alldata, alldata[[factorlabel]]==ylabel)
 x<-x.alldata[[measurelabel]]
 y<-y.alldata[[measurelabel]]
-
-
 
 #######################################################################
 #######################################################################
@@ -395,7 +396,7 @@ Comparing the two sets of data
 
 ###Frequentist statistics
 
-A *p*-value is the probability of obtaining the observed result, or a more extreme result, assuming the null-hypothesis is true. It is not the probability that the null-hypothesis or the alternative hypothesis is true (for such inferences, see Bayesian statistics below). In repeated sampling, 95% of future 95% confidence intervals can be expected to contain the true population paramters (e.g, the mean difference or the effect size). Confidence intervals are not a statement about the probability that a single confidence interval contains the true population parameter, but a statement about the probability that future confidence intervals will contain the true population parameter. Hedges' *g* (also referred to as *d*~unbiased~, see Borenstein, Hedges, Higgins, & Rothstein, 2009) is provided as best estimate of Cohen's *d*, but the best estimate of the confidence interval is based on *d* (as recommended by Cumming, 2012). Hedges's *g* and the 95% CI around the effect size are calculated using the MBESS package by ([Kelley (2007](http://dx.doi.org/10.3758/BF03192993)). The common language effect size expresses the probability that in any random pairing of two observations from both groups, the observation from one group is higher than the observation from the other group, see [McGraw & Wong, 1992](http://dx.doi.org/10.1037/0033-2909.111.2.361). Default interpretations of the size of an effect as provided here should only be used as a last resort, and it is preferable to interpret the size of the effect in relationto other effects in the literature, or in terms of it's practical significance.
+A *p*-value is the probability of obtaining the observed result, or a more extreme result, assuming the null-hypothesis is true. It is not the probability that the null-hypothesis or the alternative hypothesis is true (for such inferences, see Bayesian statistics below). In repeated sampling, 95% of future 95% confidence intervals can be expected to contain the true population paramters (e.g, the mean difference or the effect size). Confidence intervals are not a statement about the probability that a single confidence interval contains the true population parameter, but a statement about the probability that future confidence intervals will contain the true population parameter. Hedges' *g* (also referred to as *d*~unbiased~, see Borenstein, Hedges, Higgins, & Rothstein, 2009) is provided as best estimate of Cohen's *d*, but the best estimate of the confidence interval is based on *d* (as recommended by Cumming, 2012). Hedges's *g* and the 95% CI around the effect size are calculated using the MBESS package by ([Kelley (2007](http://dx.doi.org/10.3758/BF03192993)). The common language effect size expresses the probability that in any random pairing of two observations from both groups, the observation from one group is higher than the observation from the other group, see [McGraw & Wong, 1992](http://dx.doi.org/10.1037/0033-2909.111.2.361). Default interpretations of the size of an effect as provided here should only be used as a last resort, and it is preferable to interpret the size of the effect in relation to other effects in the literature, or in terms of its practical significance.
 
 ####Results
 
@@ -407,7 +408,7 @@ Bayesian statistics can quantify the relative evidence in the data for either th
 
 ####Results
 
-The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This indicates the data are `r BF` (or log~e~ BF =`r round(log(BF), digits=2)`) times more likely under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, HDI = `r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`, `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`.
+The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This indicates the data are `r BF` (or log~e~ BF =`r round(log(BF), digits=2)`) times more likely under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, 95% HDI = [`r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`; `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`].
 
 ###Robust statistics
 

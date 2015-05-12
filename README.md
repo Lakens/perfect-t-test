@@ -19,7 +19,7 @@ install_github("nicebread/WRS", subdir="pkg")
 
 You can run this by removing the # in front to the R markdown script, selecting the lines of code, and clicking 'Run' button (or simply press CTRL+ENTER). Don't forget to put back the # in front of these lines of code, or R will install all packages each time your run the code. Alternatively, **copy paste the code above to a new R script and run it**.
 
-Now you are ready to define the necessary variables to adapt the code to the data you have collected. Your data should be read into R. The current script is set up to read inyour data as a **tab-delimited text file** (see the two demo-files in the .zip file). In SPSS, you can select 'save as' and select 'save as type: Tab deleminited (*.dat)'.
+Now you are ready to define the necessary variables to adapt the code to the data you have collected. Your data should be read into R. The current script is set up to read in your data as a **tab-delimited text file** (see the two demo-files in the .zip file). In SPSS, you can select 'save as' and select 'save as type: Tab deleminited (*.dat)'.
 
 **Make sure your datafile is in the same folder as the R markdown (.Rmd) file**. If .Rmd files are not associated with R Studio, open the R markdown file by right-clicking, and choosing 'Open With' - and browse to the rstudio.exe.
 

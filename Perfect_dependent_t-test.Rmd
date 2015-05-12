@@ -8,7 +8,7 @@ output: word_document
 #######  How to use ################
 ####################################
 
-# 1) Install the packages and software specified below. 
+# 1) Install the packages and software specified below (consider also updating all installed packages by chosing Update on the Packages tab). 
 # 2) Define the variable names, change the default settings, if desired
 # 3) Hit Knit Word! (Output takes about a two minutes, mainly do bootstrapping the robust effect size and calculating the Bayesian Highest Density Iinterval)
 
@@ -33,7 +33,7 @@ output: word_document
 ## Define variables names below ###
 ###################################
 
-#Copy paste your data into a spreadsheet. Create 3 columns. On the first row, type the name of the variables. One column should contain the subject identifer (e.g., PPNR). The other two rows should contain the data from the two within-subject conditions. Make sure there is no missing data (or emtpy cells underneath the data - check in .txt file).
+#Copy paste your data into a spreadsheet. Create 3 columns. On the first row, type the name of the variables. One column should contain the subject identifer (e.g., PPNR). The other two columns should contain the data from the two within-subject conditions. Make sure there is no missing data (or emtpy cells underneath the data - check in .txt file).
 #Save your data as a .txt file - select Text (tab delimited)(*.txt).
 
 #Make sure the data file and the R markdown file are in the same folder.
@@ -595,7 +595,7 @@ Bayesian statistics can quantify the relative evidence in the data for either th
 
 ####Results
 
-The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This indicates the data are `r round(BF, digits = 2)` (or log~e~ BF =`r round(log(BF), digits=2)`) times more probable under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, HDI = `r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`, `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`.  
+The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This indicates the data are `r round(BF, digits = 2)` (or log~e~ BF =`r round(log(BF), digits=2)`) times more probable under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, 95% HDI = [`r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`; `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`].  
 
 ###Robust statistics
 
