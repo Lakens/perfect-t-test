@@ -13,7 +13,8 @@ knitr::opts_chunk$set(error = TRUE)
 
 # 1) Install the packages and software specified below. (consider also updating all installed packages by chosing Update on the Packages tab)
 # 2) Define the variable names, change the default settings, if desired
-# 3) Hit Knit Word! (Output takes about a two minutes, mainly do bootstrapping the robust effect size and calculating the Bayesian Highest Density Iinterval)
+# 3) Hit Knit Word (or Knit HTML)! (Output can take while due to bootstrapping the robust effect size and calculating the Bayesian Highest Density Iinterval)
+
 
 ####################################
 ######  FIRST TIME ONLY ############
