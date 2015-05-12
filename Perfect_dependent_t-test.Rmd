@@ -37,7 +37,7 @@ output: word_document
 #Save your data as a .txt file - select Text (tab delimited)(*.txt).
 
 #Make sure the data file and the R markdown file are in the same folder.
-alldata <- read.delim("demo_dependent.txt", header=TRUE) #Define the name of the tab delimited txt file in the working directory that contains 3 columns: a subject identifier and 2 columns of the data in the two within-subject conditions.
+alldata <- read.delim("Stroop.txt", header=TRUE, dec=",") #Define the name of the tab delimited txt file (or .csv file) that contains at least 3 columns: a subject identifier and 2 columns of the data in the two within-subject conditions. Specify the decimal symbol (e.g., your text file stores numbers either as 3.14 or 3,14)
 
 alldata<-na.omit(alldata)#rows with missing data are removed
 
@@ -52,6 +52,10 @@ subject<-"PPNR"  #needs to match the datafile!
 
 #Define name of the factor that describes the difference between x and y (e.g., condition, time).
 factorlabel<-"congruency"
+
+#If you want to perform a dependent t-test on a subgroup of your data, change this:
+subgrouplabel<-"" #Specify header of the addition column specifying the subgroups (e.g., "Year") (needs to match the datafile!). To analyze all data, leave empty (i.e., "")
+subgrouptokeep<-"" #Specify the identifier of the group you want to analyze (e.g., "2013")
 
 #Define name of the measure that describes the values of x and y (e.g., reaction times, self-reported happiness)
 measurelabel<-"reactiontimes"
@@ -81,6 +85,12 @@ InAHurry<-"NO"
 #############################################################
 
 options(scipen=20) #disable scientific notation for numbers smaller than x (i.e., 10) digits (e.g., 4.312e+22)
+
+#Remove other conditions in your datafile (only keep groups specified above)
+if (subgrouplabel!=""){
+  alldata<-subset(alldata, alldata[[subgrouplabel]]==subgrouptokeep)
+}
+
 
 #create two variables (x and y) that contain values of two datasets to be compared
 x<-alldata[[xlabel]]
