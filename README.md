@@ -27,7 +27,7 @@ For an independent *t*-test **two** columns are required, one with the independe
 
 You need to specify the headers in your text file in the R markdown file (as xlabel (e.g., Congruent), ylabel (e.g., Incongruent), and subject (e.g., PPNR)). R is case-sensitive (so "Congruent" is not the same as "congruent"). In addition, specify what you have measured and manipulated - these names are used in the running text output the Markdown file creates, and as axis titles of the figures that are created. You can change the alpha level, confidence interval, and sidedness of the test if requires, as well as the Bayesian prior. Finally, some calculations require time (the Bayesian HDI and robust effect size estimates) which you can choose not to calculate if you are in a hurry. In the independent *t*-test you can change the number of bootstraps for the robust effect size, which might be necessary in large samples (try it if you get an error).
 
-If all this is done, simply hit the **Knit Word** button to create an automatically generated word document that reports the results. 
+If all this is done, simply hit the **Knit Word** button (or choose the **Knit HTML** button) to create an automatically generated document that reports the results. 
 
 #The Output
 

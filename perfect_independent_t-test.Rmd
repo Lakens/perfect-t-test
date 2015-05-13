@@ -5,7 +5,6 @@ output: word_document
 ---
 
 ```{r, echo=FALSE, include=FALSE, cache = FALSE}
-knitr::opts_chunk$set(error = TRUE)
 
 ####################################
 #######  How to use ################
@@ -41,7 +40,7 @@ knitr::opts_chunk$set(error = TRUE)
 #Save your data as a .txt file - select Text (tab delimited)(*.txt).
 
 #Make sure the data file and the R markdown file are in the same folder.
-alldata <- read.delim("demo_independent.txt", header=TRUE, dec=".") #Define the name of the tab delimited txt file (or .csv file) that contains the data with at least 2 columns: an independent (grouping) variable and a dependent variable. Specify the decimal symbol (e.g., your text file stores numbers either as 3.14 or 3,14)
+alldata <- read.delim("demo_independent2.txt", header=TRUE, dec=".") #Define the name of the tab delimited txt file (or .csv file) that contains the data with at least 2 columns: an independent (grouping) variable and a dependent variable. Specify the decimal symbol (e.g., your text file stores numbers either as 3.14 or 3,14)
 
 alldata<-na.omit(alldata)#rows with missing data are removed
 
@@ -280,12 +279,13 @@ require(BEST) #To calculate HIB
 
 if(InAHurry!="YES"){BESTout<-BESTmcmc(x,y)}
 if(InAHurry!="YES"){BESTdiff <- BESTout$mu1 - BESTout$mu2}
-if(InAHurry!="YES"){BESTHDI<-hdi(BESTdiff, credMass = 0.95)}
-if(InAHurry!="YES"){mean(BESTdiff)}
+if(InAHurry!="YES"){BESTHDI<-hdi(BESTdiff, credMass = ConfInt)}
 ifelse((InAHurry!="YES"),mu<-mean(BESTdiff),mu<-"NOT CALCULATED DUE TO TIME CONSTRAINTS")
 ifelse((InAHurry!="YES"),HDI_l<-BESTHDI[1],HDI_l<-"NOT CALCULATED")
 ifelse((InAHurry!="YES"),HDI_u<-BESTHDI[2],HDI_u<-"NOT CALCULATED")
-
+Rhat<-attr(BESTout, "Rhat")
+neff<-attr(BESTout, "n.eff")
+ifelse(Rhat[1]<1.1 && Rhat[1]<1.1 && neff[1]>10000 && neff[2]>10000, BESTacceptable<-"acceptable", BESTacceptable<-"not acceptable - check the HDI calculation") 
 
 #Interpret strength of evidence of Bayes Factor following Jeffreys (1961)
 if (0.33 < BF && BF <= 1){evidence<-"anecdotal evidence for H0"}
@@ -313,7 +313,7 @@ Checking for outliers, normality, equality of variances.
 
 Boxplots can be used to identify outliers. Boxplots give the median (thick line), and 25% of the data above and below the median (box). End of whiskers are the maximum and minimum value when excluding outliers (whih are indicated by dots). 
 
-```{r, echo=FALSE, warning=FALSE}
+```{r, echo=FALSE, warning=FALSE, fig.width=3.5, dpi=300}
 
 ggplot(alldata, aes(factor(eval(parse(text=paste(factorlabel)))), eval(parse(text=paste(measurelabel))))) +
   geom_boxplot()+
@@ -397,19 +397,19 @@ Comparing the two sets of data
 
 ###Frequentist statistics
 
-A *p*-value is the probability of obtaining the observed result, or a more extreme result, assuming the null-hypothesis is true. It is not the probability that the null-hypothesis or the alternative hypothesis is true (for such inferences, see Bayesian statistics below). In repeated sampling, 95% of future 95% confidence intervals can be expected to contain the true population paramters (e.g, the mean difference or the effect size). Confidence intervals are not a statement about the probability that a single confidence interval contains the true population parameter, but a statement about the probability that future confidence intervals will contain the true population parameter. Hedges' *g* (also referred to as *d*~unbiased~, see Borenstein, Hedges, Higgins, & Rothstein, 2009) is provided as best estimate of Cohen's *d*, but the best estimate of the confidence interval is based on *d* (as recommended by Cumming, 2012). Hedges's *g* and the 95% CI around the effect size are calculated using the MBESS package by ([Kelley (2007](http://dx.doi.org/10.3758/BF03192993)). The common language effect size expresses the probability that in any random pairing of two observations from both groups, the observation from one group is higher than the observation from the other group, see [McGraw & Wong, 1992](http://dx.doi.org/10.1037/0033-2909.111.2.361). Default interpretations of the size of an effect as provided here should only be used as a last resort, and it is preferable to interpret the size of the effect in relation to other effects in the literature, or in terms of its practical significance.
+A *p*-value is the probability of obtaining the observed result, or a more extreme result, assuming the null-hypothesis is true. It is not the probability that the null-hypothesis or the alternative hypothesis is true (for such inferences, see Bayesian statistics below). In repeated sampling, `r 100*ConfInt`% of future `r 100*ConfInt`% confidence intervals can be expected to contain the true population paramters (e.g, the mean difference or the effect size). Confidence intervals are not a statement about the probability that a single confidence interval contains the true population parameter, but a statement about the probability that future confidence intervals will contain the true population parameter. Hedges' *g* (also referred to as *d*~unbiased~, see Borenstein, Hedges, Higgins, & Rothstein, 2009) is provided as best estimate of Cohen's *d*, but the best estimate of the confidence interval is based on *d* (as recommended by Cumming, 2012). Hedges's *g* and the `r 100*ConfInt`% CI around the effect size are calculated using the MBESS package by ([Kelley (2007](http://dx.doi.org/10.3758/BF03192993)). The common language effect size expresses the probability that in any random pairing of two observations from both groups, the observation from one group is higher than the observation from the other group, see [McGraw & Wong, 1992](http://dx.doi.org/10.1037/0033-2909.111.2.361). Default interpretations of the size of an effect as provided here should only be used as a last resort, and it is preferable to interpret the size of the effect in relation to other effects in the literature, or in terms of its practical significance.
 
 ####Results
 
-The mean `r ylabelstring` (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round(sd1, digits = 2)`, *n* = `r n1`) of participants in the `r xlabel` condition was `r direction` the mean (*M* = `r round(mean(y), digits = 2)`, *SD* = `r round(sd2,digits=2)`, *n* = `r n2`) of participants in the `r ylabel` condition. The difference between measurements is (*M* = `r round(m_diff, digits=2)`), 95% CI = [`r round(CI_diff[1:1], digits=2)`;`r round(CI_diff[2:2],digits=2)`], *t*(`r round(ttestresult$parameter, digits=2)`) = `r round(tvalue, digits=2)`, *p* `r ifelse(pvalue>0.001," = ", " < ")` `r ifelse(pvalue>0.001,formatC(round(pvalue, digits=3),digits=3, format="f"), "0.001")`, Hedges' *g* = `r round(d, digits=2)`, 95% CI [`r round(ci_l_d, digits=2)`;`r round(ci_u_d, digits=2)`]. This can be considered a `r effectsize` effect. The observed data is `r surprising` under the assumption that the null-hypothesis is true. The Common Language effect size (McGraw & Wong, 1992) indicates that the likelihood that a persons `r ylabelstring` in the `r xlabel` condition is `r direction` the `r ylabelstring` in the `r ylabel` condition is `r round(100*CL, digits=0)`%.
+The mean `r ylabelstring` (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round(sd1, digits = 2)`, *n* = `r n1`) of participants in the `r xlabel` condition was `r direction` the mean (*M* = `r round(mean(y), digits = 2)`, *SD* = `r round(sd2,digits=2)`, *n* = `r n2`) of participants in the `r ylabel` condition. The difference between measurements is (*M* = `r round(m_diff, digits=2)`), `r 100*ConfInt`% CI = [`r round(CI_diff[1:1], digits=2)`;`r round(CI_diff[2:2],digits=2)`], *t*(`r round(ttestresult$parameter, digits=2)`) = `r round(tvalue, digits=2)`, *p* `r ifelse(pvalue>0.001," = ", " < ")` `r ifelse(pvalue>0.001,formatC(round(pvalue, digits=3),digits=3, format="f"), "0.001")`, Hedges' *g* = `r round(d, digits=2)`, `r 100*ConfInt`% CI [`r round(ci_l_d, digits=2)`;`r round(ci_u_d, digits=2)`]. This can be considered a `r effectsize` effect. The observed data is `r surprising` under the assumption that the null-hypothesis is true. The Common Language effect size (McGraw & Wong, 1992) indicates that the likelihood that a persons `r ylabelstring` in the `r xlabel` condition is `r direction` the `r ylabelstring` in the `r ylabel` condition is `r round(100*CL, digits=0)`%.
 
 ###Bayesian statistics
 
-Bayesian statistics can quantify the relative evidence in the data for either the alternative hypothesis or the null hypothesis. Bayesian statistics require priors to be defined. In the Bayes Factor calculation reported below, a non-informative Jeffreys prior is placed on the variance of the normal population, while a Cauchy prior is placed on the standardized effect size (for details, [see Morey & Rouder, 2011](http://drsmorey.org/bibtex/upload/Morey:Rouder:2011.pdf)). Calculations are performed using the [BayesFactor package](http://cran.r-project.org/web/packages/BayesFactor/BayesFactor.pdf). For a detailed explanation of an independent *t*-test, see [this post by Richard Morey](http://bayesfactor.blogspot.nl/2014/02/bayes-factor-t-tests-part-2-two-sample.html). Default interpretations of the strength of the evidence are provided but should not distract from the fact that strength of evidence is a continuous function of the Bayes Factor. A second popular Bayesian approach relies on estimation, and the mean posterior and 95% higest density intervals (HDI) are calculated following recommendations by [Kruschke, (2013)](http://www.indiana.edu/~kruschke/BEST/BEST.pdf) based on vague priors. According to Kruschke (2010, p. 34) "The HDI indicates which points of a distribution we believe in most strongly." "The width of the HDI is another way of measuring uncertainty of beliefs. If the HDI is wide, then beliefs are uncertain. If the HDI is narrow, then beliefs are fairly certain."
+Bayesian statistics can quantify the relative evidence in the data for either the alternative hypothesis or the null hypothesis. Bayesian statistics require priors to be defined. In the Bayes Factor calculation reported below, a non-informative Jeffreys prior is placed on the variance of the normal population, while a Cauchy prior is placed on the standardized effect size (for details, [see Morey & Rouder, 2011](http://drsmorey.org/bibtex/upload/Morey:Rouder:2011.pdf)). Calculations are performed using the [BayesFactor package](http://cran.r-project.org/web/packages/BayesFactor/BayesFactor.pdf). For a detailed explanation of an independent *t*-test, see [this post by Richard Morey](http://bayesfactor.blogspot.nl/2014/02/bayes-factor-t-tests-part-2-two-sample.html). Default interpretations of the strength of the evidence are provided but should not distract from the fact that strength of evidence is a continuous function of the Bayes Factor. A second popular Bayesian approach relies on estimation, and the mean posterior and `r 100*ConfInt`% higest density intervals (HDI) are calculated following recommendations by [Kruschke, (2013)](http://www.indiana.edu/~kruschke/BEST/BEST.pdf) based on vague priors. According to Kruschke (2010, p. 34) "The HDI indicates which points of a distribution we believe in most strongly." "The width of the HDI is another way of measuring uncertainty of beliefs. If the HDI is wide, then beliefs are uncertain. If the HDI is narrow, then beliefs are fairly certain." To check the convergence and fit of the HDI simulations, the Brooks-Gelman-Rubin scale reduction factor for both groups should be smaller than 1.1 (For `r xlabel`:  `r Rhat[1]`, and for `r ylabel`: `r Rhat[2]`) and the effective sample size should be larger than 10000 (for `r xlabel`:  `r round(neff[1])`, and for `r ylabel`: `r round(neff[2])`). Thus, the HDI simulation is `r BESTacceptable`.
 
 ####Results
 
-The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This indicates the data are `r round(BF, digits=2)` (or log~e~ BF =`r round(log(BF), digits=2)`) times more likely under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, 95% HDI = [`r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`; `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`].
+The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This indicates the data are `r round(BF, digits=2)` (or log~e~ BF =`r round(log(BF), digits=2)`) times more likely under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, `r 100*ConfInt`% HDI = [`r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`; `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`].
 
 ###Robust statistics
 
@@ -417,20 +417,20 @@ Values in the tails of the distribution can have a strong influence on the mean.
 
 ####Results
 
-Using the Yuen-Welch method for comparing 20% trimmed means showed the mean difference in `r ylabelstring` between conditions is (*M* = `r round(yuentest$est.dif, digits = 2)`, 95% symmetric CI [`r round(yuentest$ci[1], digits = 2)`;`r round(yuentest$ci[2], digits = 2)`]), *t* = `r round(yuentest$test.stat, digits = 2)`, *p* `r ifelse(yuentest$p.value>=0.001," = ", " < ")` `r ifelse(yuentest$p.value>=0.001,formatC(round(yuentest$p.value, digits = 2)), "0.001")`, Robust *d~t~* = `r ifelse(InAHurry!="YES",round(d_robust, digits = 2),"NOT CALCULATED")`,  95% CI = [`r ifelse(InAHurry!="YES",round(d_robust_ci_l, digits = 2), "NOT CALCULATED")`;`r ifelse(InAHurry!="YES",round(d_robust_ci_u, digits = 2), "NOT CALCULATED")`]). The observed data is `r surprising2` under the assumption that the null-hypothesis is true. This can be considered a `r effectsize2` effect.
+Using the Yuen-Welch method for comparing 20% trimmed means showed the mean difference in `r ylabelstring` between conditions is (*M* = `r round(yuentest$est.dif, digits = 2)`, `r 100*ConfInt`% symmetric CI [`r round(yuentest$ci[1], digits = 2)`;`r round(yuentest$ci[2], digits = 2)`]), *t* = `r round(yuentest$test.stat, digits = 2)`, *p* `r ifelse(yuentest$p.value>=0.001," = ", " < ")` `r ifelse(yuentest$p.value>=0.001,formatC(round(yuentest$p.value, digits = 3)), "0.001")`, Robust *d~t~* = `r ifelse(InAHurry!="YES",round(d_robust, digits = 2),"NOT CALCULATED")`,  `r 100*ConfInt`% CI = [`r ifelse(InAHurry!="YES",round(d_robust_ci_l, digits = 2), "NOT CALCULATED")`;`r ifelse(InAHurry!="YES",round(d_robust_ci_u, digits = 2), "NOT CALCULATED")`]). The observed data is `r surprising2` under the assumption that the null-hypothesis is true. This can be considered a `r effectsize2` effect.
 
 Plotting data
 ------
 
-Graph examples. In the code, you can turn different layers on and off, and change their properties by adding or removing # in front of a line of code. Displays violin plot (rotated kernal density plots) and 95% CI bars, individual data-points, or simple bar graphs.
+Graph examples. In the code, you can turn different layers on and off, and change their properties by adding or removing # in front of a line of code. Displays violin plot (rotated kernal density plots) and `r 100*ConfInt`% CI bars, individual data-points, or simple bar graphs.
 
-###*Figure 1*. Means and 95% CI, and violin plot
+###*Figure 1*. Means and `r 100*ConfInt`% CI, and violin plot
 
-```{r, echo=FALSE}
+```{r, echo=FALSE,  fig.width=3, dpi=300}
 #Example 1: means and 95% CI 
 ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(parse(text=paste(measurelabel))), group=1)) +
   #  geom_bar(position=position_dodge(.9), colour="black", stat="identity", fill="white") +
-  geom_errorbar(width=.05, size=1, aes(ymin=lower, ymax=upper)) +
+  geom_errorbar(width=.1, size=1, aes(ymin=lower, ymax=upper)) +
   geom_point(size=2) +
   #  geom_point(data=alldata.long) +
   geom_violin(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), alpha=0) +
@@ -439,15 +439,15 @@ ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(
 
 ```
 
-###*Figure 2*. Bar chart displaying means, individual datapoints, and 95% CI
+###*Figure 2*. Bar chart displaying means, individual datapoints, and `r 100*ConfInt`% CI
 
-```{r, echo=FALSE}
+```{r, echo=FALSE,  fig.width=3, dpi=300}
 
 
 #Example 2: bar chart with individual data point and 95% CI
 ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(parse(text=paste(measurelabel))), group=1)) +
   geom_bar(position=position_dodge(.9), colour="black", stat="identity", fill="white") +
-  geom_errorbar(width=.1, size=0.1, aes(ymin=lower, ymax=upper)) +
+  geom_errorbar(width=.1, size=0.5, aes(ymin=lower, ymax=upper)) +
 #  geom_point(size=4) +
   geom_point(data=alldata, alpha=0.2) +
 #  geom_violin(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), alpha=0) +
@@ -455,16 +455,16 @@ ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(
   ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
 ```
 
-###*Figure 3*. Bar chart displaying 95% CI
+###*Figure 3*. Bar chart displaying `r 100*ConfInt`% CI
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.width=3, dpi=300}
 
 
 #Example 3: bar chart with 95% CI
 ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(parse(text=paste(measurelabel))), group=1)) +
 #  geom_bar(position=position_dodge(.9), colour="black", stat="identity", fill="white") +
 #  geom_boxplot(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), width=0.1) +
-  geom_errorbar(width=.2, size=0.1, aes(ymin=lower, ymax=upper)) +
+  geom_errorbar(width=.2, size=0.5, aes(ymin=lower, ymax=upper)) +
 # geom_point(size=4) +
 # geom_point(data=alldata) +
 # geom_violin(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), alpha=0) +
@@ -542,3 +542,12 @@ alldata
 
 sessionInfo()
 ```
+
+
+Copyright © 2015 Daniel Lakens
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+For more information, see the [GNU Affero General Public License](http://www.gnu.org/licenses/)

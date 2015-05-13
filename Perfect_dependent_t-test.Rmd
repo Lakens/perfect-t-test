@@ -400,8 +400,12 @@ if(BF==Inf){BF<-"practically infinitely high"}
 require(BEST) #To calculate HIB
 if(InAHurry!="YES"){BESTout1g<-BESTmcmc(diff)}
 ifelse((InAHurry!="YES"),mu<-summary(BESTout1g)[1,1],mu<-"NOT CALCULATED DUE TO TIME CONSTRAINTS")
-ifelse((InAHurry!="YES"),HDI_l<-summary(BESTout1g)[1,5],HDI_l<-"NOT CALCULATED")
-ifelse((InAHurry!="YES"),HDI_u<-summary(BESTout1g)[1,6],HDI_u<-"NOT CALCULATED")
+if(InAHurry!="YES"){BESTHDI<-hdi(BESTout1g$mu, credMass = ConfInt)}
+ifelse((InAHurry!="YES"),HDI_l<-BESTHDI[1],HDI_l<-"NOT CALCULATED")
+ifelse((InAHurry!="YES"),HDI_u<-BESTHDI[2],HDI_u<-"NOT CALCULATED")
+Rhat<-attr(BESTout1g, "Rhat")
+neff<-attr(BESTout1g, "n.eff")
+ifelse(Rhat[1]<1.1 && neff[1]>10000, BESTacceptable<-"acceptable", BESTacceptable<-"not acceptable - check the HDI calculation")
 
 #Interpret strength of evidence of Bayes Factor following Jeffreys (1961)
 if (0.33 < BF && BF <= 1){evidence<-"anecdotal evidence for H0"}
@@ -593,19 +597,19 @@ Comparing the two sets of data
 
 ###Frequentist statistics
 
-A *p*-value is the probability of obtaining the observed result, or a more extreme result, assuming the null-hypothesis is true. It is not the probability that the null-hypothesis or the alternative hypothesis is true (for such inferences, see Bayesian statistics below). In repeated sampling, 95% of future 95% confidence intervals can be expected to contain the true population parameters (e.g, the mean difference or the effect size). Confidence intervals are not a statement about the probability that a single confidence interval contains the true population parameter, but a statement about the probability that future confidence intervals will contain the true population parameter. Hedges' *g* (also referred to as *d*~unbiased~, see Borenstein, Hedges, Higgins, & Rothstein, 2009) is provided as best estimate of Cohen's *d*, but the best estimate of the confidence interval is based on *d*~av~ (as recommended by Cumming, 2012). Hedges's *g* and the 95% CI around the effect size are calculated using the MBESS package by ([Kelley (2007](http://dx.doi.org/10.3758/BF03192993)). The common language effect size expresses the probability that in any random pairing of two observations from both groups, the observation from one group is higher than the observation from the other group, see [McGraw & Wong, 1992](http://dx.doi.org/10.1037/0033-2909.111.2.361). In a dependent *t*-test, the effect size Cohen's *d* can be calculated by using a standardizer that controls for the correlation between observations (*d*~av~) or not (*d*~z~). Both are provided, but *d*~av~ (or actually it's unbiased estimate, *g*~av~) is recommended. For a discussion, see [Lakens, 2013](http://journal.frontiersin.org/Journal/10.3389/fpsyg.2013.00863/full). Default interpretations of the size of an effect as provided here should only be used as a last resort, and it is preferable to interpret the size of the effect in relation to other effects in the literature, or in terms of its practical significance.
+A *p*-value is the probability of obtaining the observed result, or a more extreme result, assuming the null-hypothesis is true. It is not the probability that the null-hypothesis or the alternative hypothesis is true (for such inferences, see Bayesian statistics below). In repeated sampling, `r 100*ConfInt`% of future `r 100*ConfInt`% confidence intervals can be expected to contain the true population parameters (e.g, the mean difference or the effect size). Confidence intervals are not a statement about the probability that a single confidence interval contains the true population parameter, but a statement about the probability that future confidence intervals will contain the true population parameter. Hedges' *g* (also referred to as *d*~unbiased~, see Borenstein, Hedges, Higgins, & Rothstein, 2009) is provided as best estimate of Cohen's *d*, but the best estimate of the confidence interval is based on *d*~av~ (as recommended by Cumming, 2012). Hedges's *g* and the `r 100*ConfInt`% CI around the effect size are calculated using the MBESS package by ([Kelley (2007](http://dx.doi.org/10.3758/BF03192993)). The common language effect size expresses the probability that in any random pairing of two observations from both groups, the observation from one group is higher than the observation from the other group, see [McGraw & Wong, 1992](http://dx.doi.org/10.1037/0033-2909.111.2.361). In a dependent *t*-test, the effect size Cohen's *d* can be calculated by using a standardizer that controls for the correlation between observations (*d*~av~) or not (*d*~z~). Both are provided, but *d*~av~ (or actually it's unbiased estimate, *g*~av~) is recommended. For a discussion, see [Lakens, 2013](http://journal.frontiersin.org/Journal/10.3389/fpsyg.2013.00863/full). Default interpretations of the size of an effect as provided here should only be used as a last resort, and it is preferable to interpret the size of the effect in relation to other effects in the literature, or in terms of its practical significance.
 
 ####Results
 
-The mean `r ylabelstring` (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round(sd1, digits = 2)`) of participants in the `r xlabel` condition was `r direction` the mean (*M* = `r round(mean(y), digits = 2)`, *SD* = `r round(sd2,digits=2)`) of participants in the `r ylabel` condition (*r* = `r round(r, digits = 2)`). The difference between measurements is (*M* = `r round(m_diff, digits=2)`, *SD* = `r round(s_diff, digits=2)`), 95% CI = [`r round(CI_diff[1:1], digits=2)`;`r round(CI_diff[2:2],digits=2)`], *t*(`r round(ttestresult$parameter, digits=2)`) = `r round(tvalue, digits=2)`, *p* `r ifelse(pvalue>0.001," = ", " < ")` `r ifelse(pvalue>0.001, formatC(round(pvalue, digits=3),digits=3, format="f"), "0.001")`, Hedges' *g* = `r round(d_unb, digits=2)`, 95% CI [`r round(ci_l_d_av, digits=2)`;`r round(ci_u_d_av, digits=2)`] (or *d*~z~ = `r round(d_z, digits=2)`, 95% CI [`r round(ci_l_d_z, digits=2)`;`r round(ci_u_d_z, digits=2)`]). This can be considered a `r effectsize` effect. The observed data is `r surprising` under the assumption that the null-hypothesis is true. The Common Language effect size (McGraw & Wong, 1992) indicates that after controlling for individual differences, the likelihood that a persons `r ylabelstring` in the `r xlabel` condition is `r direction` the `r ylabelstring` in the `r ylabel` condition is `r round(100*CL, digits=0)`%.
+The mean `r ylabelstring` (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round(sd1, digits = 2)`) of participants in the `r xlabel` condition was `r direction` the mean (*M* = `r round(mean(y), digits = 2)`, *SD* = `r round(sd2,digits=2)`) of participants in the `r ylabel` condition (*r* = `r round(r, digits = 2)`). The difference between measurements is (*M* = `r round(m_diff, digits=2)`, *SD* = `r round(s_diff, digits=2)`), `r 100*ConfInt`% CI = [`r round(CI_diff[1:1], digits=2)`;`r round(CI_diff[2:2],digits=2)`], *t*(`r round(ttestresult$parameter, digits=2)`) = `r round(tvalue, digits=2)`, *p* `r ifelse(pvalue>0.001," = ", " < ")` `r ifelse(pvalue>0.001, formatC(round(pvalue, digits=3),digits=3, format="f"), "0.001")`, Hedges' *g* = `r round(d_unb, digits=2)`, `r 100*ConfInt`% CI [`r round(ci_l_d_av, digits=2)`;`r round(ci_u_d_av, digits=2)`] (or *d*~z~ = `r round(d_z, digits=2)`, `r 100*ConfInt`% CI [`r round(ci_l_d_z, digits=2)`;`r round(ci_u_d_z, digits=2)`]). This can be considered a `r effectsize` effect. The observed data is `r surprising` under the assumption that the null-hypothesis is true. The Common Language effect size (McGraw & Wong, 1992) indicates that after controlling for individual differences, the likelihood that a persons `r ylabelstring` in the `r xlabel` condition is `r direction` the `r ylabelstring` in the `r ylabel` condition is `r round(100*CL, digits=0)`%.
 
 ###Bayesian statistics
 
-Bayesian statistics can quantify the relative evidence in the data for either the alternative hypothesis or the null hypothesis. Bayesian statistics require priors to be defined. In the Bayes Factor calculation reported below, a non-informative Jeffreys prior is placed on the variance of the normal population, while a Cauchy prior is placed on the standardized effect size (for details, [see Morey & Rouder, 2011](http://drsmorey.org/bibtex/upload/Morey:Rouder:2011.pdf)). Calculations are performed using the [BayesFactor package](http://cran.r-project.org/web/packages/BayesFactor/BayesFactor.pdf). Default interpretations of the strength of the evidence are provided but should not distract from the fact that strength of evidence is a continuous function of the Bayes Factor. A second popular Bayesian approach relies on estimation, and the mean posterior and 95% higest density intervals (HDI) are calculated following recommendations by [Kruschke, (2013)](http://www.indiana.edu/~kruschke/BEST/BEST.pdf) based on vague priors. According to Kruschke (2010, p. 34): 'The HDI indicates which points of a distribution we believe in most strongly. The width of the HDI is another way of measuring uncertainty of beliefs. If the HDI is wide, then beliefs are uncertain. If the HDI is narrow, then beliefs are fairly certain.'
+Bayesian statistics can quantify the relative evidence in the data for either the alternative hypothesis or the null hypothesis. Bayesian statistics require priors to be defined. In the Bayes Factor calculation reported below, a non-informative Jeffreys prior is placed on the variance of the normal population, while a Cauchy prior is placed on the standardized effect size (for details, [see Morey & Rouder, 2011](http://drsmorey.org/bibtex/upload/Morey:Rouder:2011.pdf)). Calculations are performed using the [BayesFactor package](http://cran.r-project.org/web/packages/BayesFactor/BayesFactor.pdf). Default interpretations of the strength of the evidence are provided but should not distract from the fact that strength of evidence is a continuous function of the Bayes Factor. A second popular Bayesian approach relies on estimation, and the mean posterior and `r 100*ConfInt`% higest density intervals (HDI) are calculated following recommendations by [Kruschke, (2013)](http://www.indiana.edu/~kruschke/BEST/BEST.pdf) based on vague priors. According to Kruschke (2010, p. 34): 'The HDI indicates which points of a distribution we believe in most strongly. The width of the HDI is another way of measuring uncertainty of beliefs. If the HDI is wide, then beliefs are uncertain. If the HDI is narrow, then beliefs are fairly certain.' To check the convergence and fit of the HDI simulations, the Brooks-Gelman-Rubin scale reduction factor for the difference score should be smaller than 1.1 (it is `r Rhat[1]`) and the effective sample size should be larger than 10000 (it is `r round(neff[1])`). Thus, the HDI simulation is `r BESTacceptable`.
 
 ####Results
 
-The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This indicates the data are `r round(BF, digits = 2)` (or log~e~ BF =`r round(log(BF), digits=2)`) times more probable under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, 95% HDI = [`r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`; `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`].  
+The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This indicates the data are `r round(BF, digits = 2)` (or log~e~ BF =`r round(log(BF), digits=2)`) times more probable under the alternative hypothesis, than under the null hypothesis. This data provides `r evidence`. The posterior mean difference is `r ifelse(InAHurry!="YES",round(mu, digits=2), "NOT CALCULATED")`, `r 100*ConfInt`% HDI = [`r ifelse(InAHurry!="YES",round(HDI_l, digits=2), "NOT CALCULATED")`; `r ifelse(InAHurry!="YES",round(HDI_u, digits=2), "NOT CALCULATED")`].  
 
 ###Robust statistics
 
@@ -613,16 +617,16 @@ Values in the tails of the distribution can have a strong influence on the mean.
 
 ####Results
 
-Using the Yuen-Welch method for comparing 20% trimmed means showed the mean difference in `r ylabelstring` between conditions is (*M* = `r round(yuend$dif, digits = 2)`, 95% CI [`r round(yuend$ci[1], digits = 2)`;`r round(yuend$ci[2], digits = 2)`]), which is statistically different from zero, *t*(`r yuend$df`) = `r round(yuend$teststat, digits = 2)`, *p* `r ifelse(yuend$p.value>0.001," = ", " < ")` `r ifelse(yuend$p.value>0.001, formatC(round(yuend$p.value, digits = 2), digits=3, format="f"), "0.001")`, Xi = `r round(yuend$Effect.Size, digits=2)`. The observed data is `r surprising2` under the assumption that the null-hypothesis is true. This can be considered a `r effectsize2` effect.
+Using the Yuen-Welch method for comparing 20% trimmed means showed the mean difference in `r ylabelstring` between conditions is (*M* = `r round(yuend$dif, digits = 2)`, `r 100*ConfInt`% CI [`r round(yuend$ci[1], digits = 2)`;`r round(yuend$ci[2], digits = 2)`]), which is statistically different from zero, *t*(`r yuend$df`) = `r round(yuend$teststat, digits = 2)`, *p* `r ifelse(yuend$p.value>0.001," = ", " < ")` `r ifelse(yuend$p.value>0.001, formatC(round(yuend$p.value, digits = 3), digits=3, format="f"), "0.001")`, Xi = `r round(yuend$Effect.Size, digits=2)`. The observed data is `r surprising2` under the assumption that the null-hypothesis is true. This can be considered a `r effectsize2` effect.
 
 
 
 Plotting data
 ------
 
-Graph examples. In the code, you can turn different layers on and off, and change their properties by adding or removing # in front of a line of code. Displays violin plot (rotated kernal density plots) and 95% CI bars (for between designs and adjusted for within designs following Morey (2008)), individual data-points, or simple bar graphs.
+Graph examples. In the code, you can turn different layers on and off, and change their properties by adding or removing # in front of a line of code. Displays violin plot (rotated kernal density plots) and `r 100*ConfInt`% CI bars (for between designs and adjusted for within designs following Morey (2008)), individual data-points, or simple bar graphs.
 
-###*Figure 1*. Means, violin plot, and two-tiered 95% within (crossbars) and between (endpoints of lines) confidence intervals following Baguley (2012), and violin plot. 
+###*Figure 1*. Means, violin plot, and two-tiered `r 100*ConfInt`% within (crossbars) and between (endpoints of lines) confidence intervals following Baguley (2012), and violin plot. 
 
 ```{r, echo=FALSE,  fig.width=3, dpi=300}
 #Example 1: means and two-tiered 95% CI (within and between) suggested by Baguley 
@@ -637,7 +641,7 @@ ggplot(ci.sum, aes(x=eval(parse(text=paste(factorlabel))), y=eval(parse(text=pas
 
 ```
 
-###*Figure 2*. Means, datapoints, and 95% CI (between & within)  
+###*Figure 2*. Means, datapoints, and `r 100*ConfInt`% CI (between & within)  
 
 ```{r, echo=FALSE,  fig.width=3, dpi=300}
 #Example 2: bar chart with individual data point and 95% CI (between)
@@ -651,7 +655,7 @@ ggplot(ci.sum, aes(x=eval(parse(text=paste(factorlabel))), y=eval(parse(text=pas
    ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
 ```
 
-###*Figure 3*. Bar chart displaying means and 95% CI (between)  
+###*Figure 3*. Bar chart displaying means and `r 100*ConfInt`% CI (between)  
 
 ```{r, echo=FALSE,  fig.width=3, dpi=300}
 #Example 2: bar chart with individual data point and 95% CI (between)
@@ -732,3 +736,11 @@ alldata
 sessionInfo()
 ```
 
+
+Copyright © 2015 Daniel Lakens
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+For more information, see the [GNU Affero General Public License](http://www.gnu.org/licenses/)
