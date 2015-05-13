@@ -37,7 +37,7 @@ output: word_document
 #Save your data as a .txt file - select Text (tab delimited)(*.txt).
 
 #Make sure the data file and the R markdown file are in the same folder.
-alldata <- read.delim("Stroop.txt", header=TRUE, dec=",") #Define the name of the tab delimited txt file (or .csv file) that contains at least 3 columns: a subject identifier and 2 columns of the data in the two within-subject conditions. Specify the decimal symbol (e.g., your text file stores numbers either as 3.14 or 3,14)
+alldata <- read.delim("demo_dependent.txt", header=TRUE, dec=".") #Define the name of the tab delimited txt file (or .csv file) that contains at least 3 columns: a subject identifier and 2 columns of the data in the two within-subject conditions. Specify the decimal symbol (e.g., your text file stores numbers either as 3.14 or 3,14)
 
 alldata<-na.omit(alldata)#rows with missing data are removed
 
