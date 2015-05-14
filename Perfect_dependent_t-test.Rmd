@@ -715,7 +715,11 @@ Morey R and Rouder J (2015). *BayesFactor: Computation of Bayes Factors for Comm
 
 Smithson, M. (2001). Correct confidence intervals for various regression effect sizes and parameters: The importance of noncentral distributions in computing intervals. *Educational and Psychological Measurement*, *61*, 605-632.
 
+Rochon, J., Gondan, M., & Kieser, M. (2012). To test or not to test: Preliminary assessment of normality when comparing two independent samples. *BMC Medical Research Methodology*, 12:81.
+
 Rouder, J. N., Speckman, P. L., Sun, D., Morey, R. D., & Iverson, G. (2009). Bayesian t-tests for accepting and rejecting the null hypothesis. *Psychonomic Bulletin & Review*, *16*, 752-760
+
+Ruxton, G. D. (2006). The unequal variance t-test is an underused alternative to Student's t-test and the Mann-Whitney U test. *Behavioral Ecology*, *17*, 688-690.
 
 Wickham, H. (2007). Reshaping Data with the reshape Package. *Journal of Statistical Software*, *21*, pp. 1-20. URL: http://www.jstatsoft.org/v21/i12/.
 
@@ -727,6 +731,9 @@ Wilcox, R. R. (2012). *Introduction to robust estimation and hypothesis testing*
 
 Wilcox, R. R., & Schönbrodt, F. D. (2015). *The WRS package for robust statistics in R (version 0.27.5)*. URL: https://github.com/nicebread/WRS.
 
+Wilcox, R. R., & Tian, T. S. (2011). Measuring effect size: a robust heteroscedastic approach for two or more groups. *Journal of Applied Statistics*, *38*, 1359-1368.
+
+Yap, B. W., & Sim, C. H. (2011). Comparisons of various types of normality tests. *Journal of Statistical Computation and Simulation*, *81*, 2141-2155.
 
 ###Apendix A: Data & Session Information
 
