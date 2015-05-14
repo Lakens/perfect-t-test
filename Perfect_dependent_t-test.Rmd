@@ -430,7 +430,7 @@ Checking for outliers, normality, equality of variances.
 
 ###Outliers
 
-Boxplots can be used to identify outliers. Boxplots give the median (thick line), and 25% of the data above and below the median (box). End of whiskers are the maximum and minimum value when excluding outliers (which are indicated by dots). 
+Boxplots can be used to identify outliers. Boxplots give the median (thick line), and 25% of the data above and below the median (box). End of whiskers are the maximum and minimum value when excluding outliers (which are indicated by dots). Code adapted from [Sandy Muspratt](https://github.com/SandyMuspratt/ScatterBoxPlot/blob/master/mtcars%20marginal%20boxplots.R). 
 
 ```{r, echo=FALSE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=4, fig.heigth=4, dpi=300}
 #Draw scatterplot with 2 boxplots

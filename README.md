@@ -32,3 +32,13 @@ If all this is done, simply hit the **Knit Word** button (or choose the **Knit H
 #The Output
 
 The output you get contains a boxplot, four tests for normality, histograms with kernel density plots, and Q-Q plots to check the normality of the data. It provides a test for equality of variances, but for independent *t*-tests Welch's *t*-test is report by default, regardless of whether the equality of variances assumption is violated. Frequentist statistics return the means, standard deviations, mean difference with confidence intervals, Welch's *t*-test with an effect size and the 95% confidence interval, as well as the common language effect size. Bayesian statistics are provided, including the Bayes Factor and the Highest Density Interval. Robust statistics are provided, using 20% trimmed means. Finally, a number of figures is provided that illustrate the 95% confidence intervals (within and between for dependent *t*-tests) as well as violin plots that show how the data was distributed.
+
+
+
+Copyright © 2015 Daniel Lakens
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+For more information, see the [GNU Affero General Public License](http://www.gnu.org/licenses/)
