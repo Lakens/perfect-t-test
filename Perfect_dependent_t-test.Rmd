@@ -545,7 +545,8 @@ ggplot(alldata, aes(x=diff))  +
   geom_histogram(colour="black", fill="grey", aes(y = ..density..)) +
   stat_function(fun = dnorm, args = c(mean=mean(alldata$diff), sd=sd(alldata$diff)), size = 1, color = "red", lty=2) +
   geom_density(fill=NA, colour="black", size = 1) +
-  xlab(ylabelstring) + ggtitle("Difference scores") + theme_bw(base_size=14) 
+  xlab(ylabelstring) + ggtitle("Difference scores") + theme_bw(base_size=14) + 
+  theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank())
 
 
 require(gridExtra)
@@ -554,13 +555,16 @@ p1<-ggplot(alldata, aes(x=eval(parse(text=paste(xlabel)))))  +
   geom_histogram(colour="black", fill="grey", aes(y = ..density..)) +
   stat_function(fun = dnorm, args = c(mean=mean(x), sd=sd(x)), size = 1, color = "red", lty=2) +
   geom_density(fill=NA, colour="black", size = 1) +
-  xlab(ylabelstring)  + ggtitle(xlabel)+ theme_bw(base_size=14) 
+  xlab(ylabelstring)  + ggtitle(xlabel)+ theme_bw(base_size=14) + 
+  theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank())
+
 #density plot with normal distribution (red) and kernel desity plot
 p2<-ggplot(alldata, aes(x=eval(parse(text=paste(ylabel)))))  + 
   geom_histogram(colour="black", fill="grey", aes(y = ..density..)) +
   stat_function(fun = dnorm, args = c(mean=mean(y), sd=sd(y)), size = 1, color = "red", lty=2) +
   geom_density(fill=NA, colour="black", size = 1) +
-  xlab(ylabelstring) + ggtitle(ylabel) + theme_bw(base_size=14) 
+  xlab(ylabelstring) + ggtitle(ylabel) + theme_bw(base_size=14) + 
+  theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank())
 
   grid.arrange(p1, p2, nrow=2)
 
@@ -574,10 +578,13 @@ In the Q-Q plot for the difference scores the points should fall on the line. De
 ```{r, echo=FALSE, message=FALSE, fig.width=6.3, fig.height=3.6, dpi=300}
 
 #Q-Q plot
-ggplot_qqnorm(diff, line = "quantile") + ggtitle("Difference scores") + theme_bw(base_size=14)
+ggplot_qqnorm(diff, line = "quantile") + ggtitle("Difference scores") + theme_bw(base_size=14)  + 
+  theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank())
 
-qq1<-ggplot_qqnorm(x, line = "quantile") + ggtitle(xlabel) + theme_bw(base_size=14)
-qq2<-ggplot_qqnorm(y, line = "quantile") + ggtitle(ylabel) + theme_bw(base_size=14)
+qq1<-ggplot_qqnorm(x, line = "quantile") + ggtitle(xlabel) + theme_bw(base_size=14)  + 
+  theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank())
+qq2<-ggplot_qqnorm(y, line = "quantile") + ggtitle(ylabel) + theme_bw(base_size=14)  + 
+  theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank())
 grid.arrange(qq1, qq2, ncol=2)
 
 ```
@@ -637,7 +644,8 @@ ggplot(ci.sum, aes(x=eval(parse(text=paste(factorlabel))), y=eval(parse(text=pas
   geom_point(size=2) +
 #  geom_point(data=alldata.long) +
   geom_violin(data=alldata.long, aes(group=eval(parse(text=paste(factorlabel)))), alpha=0) +
-  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14) + 
+  theme(panel.grid.major.x = element_blank())
 
 ```
 
@@ -652,7 +660,8 @@ ggplot(ci.sum, aes(x=eval(parse(text=paste(factorlabel))), y=eval(parse(text=pas
 #  geom_point(size=4) +
 #  geom_violin(data=alldata.long, aes(group=eval(parse(text=paste(factorlabel)))), alpha=0) +
    geom_point(data=alldata.long, alpha=0.25) +
-   ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+   ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14) + 
+  theme(panel.grid.major.x = element_blank())
 ```
 
 ###*Figure 3*. Bar chart displaying means and `r 100*ConfInt`% CI (between)  
@@ -665,7 +674,8 @@ ggplot(ci.sum, aes(x=eval(parse(text=paste(factorlabel))), y=eval(parse(text=pas
 #  geom_errorbar(width=0, size=1.1, aes(ymin=lower.between, ymax=upper.between)) +
 #  geom_point(size=4) +
 #  geom_point(data=alldata.long) +
-  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14) + 
+  theme(panel.grid.major.x = element_blank())
 ```
 
 ###References

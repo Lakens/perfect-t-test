@@ -318,7 +318,8 @@ Boxplots can be used to identify outliers. Boxplots give the median (thick line)
 
 ggplot(alldata, aes(factor(eval(parse(text=paste(factorlabel)))), eval(parse(text=paste(measurelabel))))) +
   geom_boxplot()+
-  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14) + 
+  theme(panel.grid.major.x = element_blank())
 
 ```
 
@@ -436,7 +437,8 @@ ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(
   #  geom_point(data=alldata.long) +
   geom_violin(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), alpha=0) +
 #  geom_boxplot(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), width=0.1) +
-  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14) + 
+  theme(panel.grid.major.x = element_blank())
 
 ```
 
@@ -453,7 +455,8 @@ ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(
   geom_point(data=alldata, alpha=0.2) +
 #  geom_violin(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), alpha=0) +
 #  geom_boxplot(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), width=0.1) +
-  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14) + 
+  theme(panel.grid.major.x = element_blank())
 ```
 
 ###*Figure 3*. Bar chart displaying `r 100*ConfInt`% CI
@@ -469,7 +472,8 @@ ggplot(ci.sum, aes(x=as.character(eval(parse(text=paste(factorlabel)))), y=eval(
 # geom_point(size=4) +
 # geom_point(data=alldata) +
 # geom_violin(data=alldata, aes(group=as.character(eval(parse(text=paste(factorlabel))))), alpha=0) +
-  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14)
+  ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14) + 
+  theme(panel.grid.major.x = element_blank())
 ```
 
 
