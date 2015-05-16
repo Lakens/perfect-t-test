@@ -403,9 +403,9 @@ ifelse((InAHurry!="YES"),mu<-summary(BESTout1g)[1,1],mu<-"NOT CALCULATED DUE TO 
 if(InAHurry!="YES"){BESTHDI<-hdi(BESTout1g$mu, credMass = ConfInt)}
 ifelse((InAHurry!="YES"),HDI_l<-BESTHDI[1],HDI_l<-"NOT CALCULATED")
 ifelse((InAHurry!="YES"),HDI_u<-BESTHDI[2],HDI_u<-"NOT CALCULATED")
-Rhat<-attr(BESTout1g, "Rhat")
-neff<-attr(BESTout1g, "n.eff")
-ifelse(Rhat[1]<1.1 && neff[1]>10000, BESTacceptable<-"acceptable", BESTacceptable<-"not acceptable - check the HDI calculation")
+if(InAHurry!="YES"){Rhat<-attr(BESTout1g, "Rhat")}
+if(InAHurry!="YES"){neff<-attr(BESTout1g, "n.eff")}
+if(InAHurry!="YES"){ifelse(Rhat[1]<1.1 && neff[1]>10000, BESTacceptable<-"acceptable", BESTacceptable<-"not acceptable - check the HDI calculation")}
 
 #Interpret strength of evidence of Bayes Factor following Jeffreys (1961)
 if (0.33 < BF && BF <= 1){evidence<-"anecdotal evidence for H0"}
@@ -605,7 +605,7 @@ The mean `r ylabelstring` (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round
 
 ###Bayesian statistics
 
-Bayesian statistics can quantify the relative evidence in the data for either the alternative hypothesis or the null hypothesis. Bayesian statistics require priors to be defined. In the Bayes Factor calculation reported below, a non-informative Jeffreys prior is placed on the variance of the normal population, while a Cauchy prior is placed on the standardized effect size (for details, [see Morey & Rouder, 2011](http://drsmorey.org/bibtex/upload/Morey:Rouder:2011.pdf)). Calculations are performed using the [BayesFactor package](http://cran.r-project.org/web/packages/BayesFactor/BayesFactor.pdf). Default interpretations of the strength of the evidence are provided but should not distract from the fact that strength of evidence is a continuous function of the Bayes Factor. A second popular Bayesian approach relies on estimation, and the mean posterior and `r 100*ConfInt`% higest density intervals (HDI) are calculated following recommendations by [Kruschke, (2013)](http://www.indiana.edu/~kruschke/BEST/BEST.pdf) based on vague priors. According to Kruschke (2010, p. 34): 'The HDI indicates which points of a distribution we believe in most strongly. The width of the HDI is another way of measuring uncertainty of beliefs. If the HDI is wide, then beliefs are uncertain. If the HDI is narrow, then beliefs are fairly certain.' To check the convergence and fit of the HDI simulations, the Brooks-Gelman-Rubin scale reduction factor for the difference score should be smaller than 1.1 (it is `r Rhat[1]`) and the effective sample size should be larger than 10000 (it is `r round(neff[1])`). Thus, the HDI simulation is `r BESTacceptable`.
+Bayesian statistics can quantify the relative evidence in the data for either the alternative hypothesis or the null hypothesis. Bayesian statistics require priors to be defined. In the Bayes Factor calculation reported below, a non-informative Jeffreys prior is placed on the variance of the normal population, while a Cauchy prior is placed on the standardized effect size (for details, [see Morey & Rouder, 2011](http://drsmorey.org/bibtex/upload/Morey:Rouder:2011.pdf)). Calculations are performed using the [BayesFactor package](http://cran.r-project.org/web/packages/BayesFactor/BayesFactor.pdf). Default interpretations of the strength of the evidence are provided but should not distract from the fact that strength of evidence is a continuous function of the Bayes Factor. A second popular Bayesian approach relies on estimation, and the mean posterior and `r 100*ConfInt`% higest density intervals (HDI) are calculated following recommendations by [Kruschke, (2013)](http://www.indiana.edu/~kruschke/BEST/BEST.pdf) based on vague priors. According to Kruschke (2010, p. 34): 'The HDI indicates which points of a distribution we believe in most strongly. The width of the HDI is another way of measuring uncertainty of beliefs. If the HDI is wide, then beliefs are uncertain. If the HDI is narrow, then beliefs are fairly certain.' To check the convergence and fit of the HDI simulations, the Brooks-Gelman-Rubin scale reduction factor for the difference score should be smaller than 1.1 (it is `r ifelse (InAHurry!="YES",Rhat[1], "NOT CALCULATED")`) and the effective sample size should be larger than 10000 (it is `r ifelse (InAHurry!="YES",round(neff[1]), "NOT CALCULATED")`). Thus, the HDI simulation is `r ifelse (InAHurry!="YES",BESTacceptable, "NOT CALCULATED")`.
 
 ####Results
 
@@ -743,6 +743,9 @@ sessionInfo()
 
 
 Copyright © 2015 Daniel Lakens
+
+Lakens, D. (2015). The perfect *t*-test. Retrieved
+from https://github.com/Lakens/perfect-t-test. doi:10.5281/zenodo.17603
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

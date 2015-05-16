@@ -55,8 +55,8 @@ factorlabel<-"condition" #needs to match the datafile (R is case-sensitive)!
 #Define name of the dependent measure column in your data file (e.g., reaction times, self-reported happiness)
 measurelabel<-"answer"  #needs to match the datafile (R is case-sensitive)!
 #Below names for axis are used. These CAN include spaces.
-xlabelstring<-"anchoring condition" #define variables to be used for axis (can be replaced by "Any Label")
-ylabelstring<-"answer"  #define variables to be used for axis
+xlabelstring<-"condition" #define variables to be used for axis (can be replaced by "Any Label")
+ylabelstring<-"answer (1-10)"  #define variables to be used for axis
 
 #Set your alpha level and confidence interval
 alpha<-0.05
@@ -70,6 +70,7 @@ H1<-"two.sided"
 
 #Calculating the Bayesian HDI and Bootstrapping the effect size for robust statistics can take quite some time (e.g., 30 minutes) in large sample sizes (e.g., N > 2000). If you are in a hurry, set the variable below to "YES", if you want the HDI and Bootstrapped ES, set it to "NO"
 InAHurry<-"NO"
+
 #If you get an error with large samples, try increasing bootstraps number below (e.g., to 5000 or 10000) and be patient (for robust d effect size calculation)
 bootstraps<-2000
 
@@ -283,9 +284,9 @@ if(InAHurry!="YES"){BESTHDI<-hdi(BESTdiff, credMass = ConfInt)}
 ifelse((InAHurry!="YES"),mu<-mean(BESTdiff),mu<-"NOT CALCULATED DUE TO TIME CONSTRAINTS")
 ifelse((InAHurry!="YES"),HDI_l<-BESTHDI[1],HDI_l<-"NOT CALCULATED")
 ifelse((InAHurry!="YES"),HDI_u<-BESTHDI[2],HDI_u<-"NOT CALCULATED")
-Rhat<-attr(BESTout, "Rhat")
-neff<-attr(BESTout, "n.eff")
-ifelse(Rhat[1]<1.1 && Rhat[1]<1.1 && neff[1]>10000 && neff[2]>10000, BESTacceptable<-"acceptable", BESTacceptable<-"not acceptable - check the HDI calculation") 
+if(InAHurry!="YES"){Rhat<-attr(BESTout, "Rhat")}
+if(InAHurry!="YES"){neff<-attr(BESTout, "n.eff")}
+if(InAHurry!="YES"){ifelse(Rhat[1]<1.1 && Rhat[1]<1.1 && neff[1]>10000 && neff[2]>10000, BESTacceptable<-"acceptable", BESTacceptable<-"not acceptable - check the HDI calculation")} 
 
 #Interpret strength of evidence of Bayes Factor following Jeffreys (1961)
 if (0.33 < BF && BF <= 1){evidence<-"anecdotal evidence for H0"}
@@ -405,7 +406,7 @@ The mean `r ylabelstring` (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round
 
 ###Bayesian statistics
 
-Bayesian statistics can quantify the relative evidence in the data for either the alternative hypothesis or the null hypothesis. Bayesian statistics require priors to be defined. In the Bayes Factor calculation reported below, a non-informative Jeffreys prior is placed on the variance of the normal population, while a Cauchy prior is placed on the standardized effect size (for details, [see Morey & Rouder, 2011](http://drsmorey.org/bibtex/upload/Morey:Rouder:2011.pdf)). Calculations are performed using the [BayesFactor package](http://cran.r-project.org/web/packages/BayesFactor/BayesFactor.pdf). For a detailed explanation of an independent *t*-test, see [this post by Richard Morey](http://bayesfactor.blogspot.nl/2014/02/bayes-factor-t-tests-part-2-two-sample.html). Default interpretations of the strength of the evidence are provided but should not distract from the fact that strength of evidence is a continuous function of the Bayes Factor. A second popular Bayesian approach relies on estimation, and the mean posterior and `r 100*ConfInt`% higest density intervals (HDI) are calculated following recommendations by [Kruschke, (2013)](http://www.indiana.edu/~kruschke/BEST/BEST.pdf) based on vague priors. According to Kruschke (2010, p. 34) "The HDI indicates which points of a distribution we believe in most strongly." "The width of the HDI is another way of measuring uncertainty of beliefs. If the HDI is wide, then beliefs are uncertain. If the HDI is narrow, then beliefs are fairly certain." To check the convergence and fit of the HDI simulations, the Brooks-Gelman-Rubin scale reduction factor for both groups should be smaller than 1.1 (For `r xlabel`:  `r Rhat[1]`, and for `r ylabel`: `r Rhat[2]`) and the effective sample size should be larger than 10000 (for `r xlabel`:  `r round(neff[1])`, and for `r ylabel`: `r round(neff[2])`). Thus, the HDI simulation is `r BESTacceptable`.
+Bayesian statistics can quantify the relative evidence in the data for either the alternative hypothesis or the null hypothesis. Bayesian statistics require priors to be defined. In the Bayes Factor calculation reported below, a non-informative Jeffreys prior is placed on the variance of the normal population, while a Cauchy prior is placed on the standardized effect size (for details, [see Morey & Rouder, 2011](http://drsmorey.org/bibtex/upload/Morey:Rouder:2011.pdf)). Calculations are performed using the [BayesFactor package](http://cran.r-project.org/web/packages/BayesFactor/BayesFactor.pdf). For a detailed explanation of an independent *t*-test, see [this post by Richard Morey](http://bayesfactor.blogspot.nl/2014/02/bayes-factor-t-tests-part-2-two-sample.html). Default interpretations of the strength of the evidence are provided but should not distract from the fact that strength of evidence is a continuous function of the Bayes Factor. A second popular Bayesian approach relies on estimation, and the mean posterior and `r 100*ConfInt`% higest density intervals (HDI) are calculated following recommendations by [Kruschke, (2013)](http://www.indiana.edu/~kruschke/BEST/BEST.pdf) based on vague priors. According to Kruschke (2010, p. 34): 'The HDI indicates which points of a distribution we believe in most strongly. The width of the HDI is another way of measuring uncertainty of beliefs. If the HDI is wide, then beliefs are uncertain. If the HDI is narrow, then beliefs are fairly certain.' To check the convergence and fit of the HDI simulations, the Brooks-Gelman-Rubin scale reduction factor for both groups should be smaller than 1.1 (For `r xlabel` : `r ifelse (InAHurry!="YES",Rhat[1], "NOT CALCULATED")`, and for `r ylabel`: `r ifelse (InAHurry!="YES",Rhat[2], "NOT CALCULATED")`) and the effective sample size should be larger than 10000 (for `r xlabel`:  `r ifelse (InAHurry!="YES",round(neff[1]), "NOT CALCULATED")`, and for `r ylabel`: `r ifelse (InAHurry!="YES",round(neff[2]), "NOT CALCULATED")`). Thus, the HDI simulation is `r ifelse (InAHurry!="YES", BESTacceptable, "NOT CALCULATED")`.
 
 ####Results
 
@@ -551,6 +552,9 @@ sessionInfo()
 
 
 Copyright © 2015 Daniel Lakens
+
+Lakens, D. (2015). The perfect *t*-test. Retrieved
+from https://github.com/Lakens/perfect-t-test. doi:10.5281/zenodo.17603
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
