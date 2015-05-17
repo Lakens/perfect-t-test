@@ -1,7 +1,7 @@
 # the perfect-*t*-test
 
 
-Lakens, D. (2015). The perfect *t*-test (version 0.1.0). Retrieved
+Lakens, D. (2015). The perfect *t*-test (version 0.1.2). Retrieved
 from https://github.com/Lakens/perfect-t-test. doi:10.5281/zenodo.17603
 
 
@@ -20,9 +20,9 @@ install_github("mrxiaohe/WRScpp")
 install_github("nicebread/WRS", subdir="pkg")
 ```
 
-You can run this by removing the # in front to the R markdown script, selecting the lines of code, and clicking 'Run' button (or simply press CTRL+ENTER). Don't forget to put back the # in front of these lines of code. Alternatively, **copy paste the code above to a new R script and run it**.
+You can run this by removing the # in front to the R markdown script, selecting the lines of code, and clicking 'Run' button (or press CTRL+ENTER). Don't forget to put back the # in front of these lines of code. Alternatively, **copy paste the code above to a new R script and run it**.
 
-Now you are ready to define the necessary variables to adapt the code to the data you have collected. Your data should be read into R. The current script is set up to read in your data as a **tab-delimited text file** (see the two demo-files in the .zip file). In SPSS, you can select 'save as' and select 'save as type: Tab deleminited (*.dat)'.
+Now you are ready to define the necessary variables to adapt the code to the data you have collected. Your data should be read into R. The current script is set up to read in your data as a **tab-delimited text file** (see the two demo-files in the .zip file). In SPSS, you can select 'save as' and select 'save as type: Tab deleminited (*.dat)', or in Excel by saving the data as 'Text (Tab delimited) (.txt)'.
 
 **Make sure your datafile is in the same folder as the R markdown (.Rmd) file**. If .Rmd files are not associated with R Studio, open the R markdown file by right-clicking, and choosing 'Open With' - and browse to the rstudio.exe.
 
@@ -34,8 +34,10 @@ If all this is done, simply hit the **Knit Word** button (or choose the **Knit H
 
 #The Output
 
-The output you get contains a boxplot, four tests for normality, histograms with kernel density plots, and Q-Q plots to check the normality of the data. It provides a test for equality of variances, but for independent *t*-tests Welch's *t*-test is report by default, regardless of whether the equality of variances assumption is violated. Frequentist statistics return the means, standard deviations, mean difference with confidence intervals, Welch's *t*-test with an effect size and the 95% confidence interval, as well as the common language effect size. Bayesian statistics are provided, including the Bayes Factor and the Highest Density Interval. Robust statistics are provided, using 20% trimmed means. Finally, a number of figures is provided that illustrate the 95% confidence intervals (within and between for dependent *t*-tests) as well as violin plots that show how the data was distributed.
+The output you get contains a boxplot, four tests for normality, histograms with kernel density plots, and Q-Q plots to check the normality of the data. It provides a test for equality of variances, but for independent *t*-tests Welch's *t*-test is report by default, regardless of whether the equality of variances assumption is violated. Frequentist statistics return the means, standard deviations, mean difference with confidence intervals, Welch's *t*-test with an effect size and the 95% confidence interval, as well as the common language effect size. Bayesian statistics are provided, including the Bayes Factor and the Highest Density Interval. Robust statistics are provided, using 20% trimmed means. Finally, a number of figures is provided that illustrate the 95% confidence intervals (within and between for dependent *t*-tests) as well as violin plots that show how the data is distributed.
 
+
+I want to thank Alexander Etz, Richard Morey, and Felix Schonbrodt for feedback on the script, and Sonya Dal Cin, Lilian Jans-Beken, Atesh Koul, Gwilym Lockwood, and Arnoud Plantinga for beta-testing.
 
 
 Copyright © 2015 Daniel Lakens

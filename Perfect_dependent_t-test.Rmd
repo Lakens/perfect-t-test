@@ -62,7 +62,7 @@ measurelabel<-"reactiontimes"
 
 #Below names for axis are used. These CAN include spaces.
 xlabelstring<-"Condition" #define variables to be used for axis (can be replaced by "Any Label")
-ylabelstring<-"reaction times (in seconds)"  #define variables to be used for axis
+ylabelstring<-"reaction time (in seconds)"  #define variables to be used for axis
 
 #Set your alpha level and confidence interval
 alpha<-0.05
@@ -96,6 +96,9 @@ if (subgrouplabel!=""){
 x<-alldata[[xlabel]]
 y<-alldata[[ylabel]]
 diff<-x-y #difference scores
+
+#Add difference to alldata dataframe for plotting.
+alldata[["diff"]] <- diff
 
 # Convert alldata to long format
 library(reshape2)
@@ -162,142 +165,10 @@ ci.sum[["upper.between"]] <- as.data.frame(bs.ci(alldata[2:3]))$upper
 ##################################################################
 ##################################################################
 
-#Test normality (p<.05 means normality assumption is violated). Kolmogorov-Smirnov (K-S) test is often used, but no longer recommended 
-#In very large samples, tests for normality can result in significant results even when data is normally distributed. Look at a plot of the data.
-#In very small samples (e,g., n = 10), deviations from normality might not be detected, but this does not mean the data is normally distributed.
+#Test normality 
 
 require(PoweR)
-statcompute(21, diff, levels = c(0.05)) #Shapiro-Wilk
-statcompute(6, diff, levels = c(0.05)) #D'Agostino-Pearson
-statcompute(2, diff, levels = c(0.05)) #Anderson-Darling
-statcompute(7, diff, levels = c(0.05)) #Jarque-Berra
 normalityrejections<-(statcompute(21, diff, levels = c(0.05))$decision + statcompute(6, diff, levels = c(0.05))$decision + statcompute(2, diff, levels = c(0.05))$decision + statcompute(7, diff, levels = c(0.05))$decision)
-
-cat("The normality assumption was rejected in ",normalityrejections," out of 4 normality tests (Anderson-Darling, D'Agostino-Pearson, and Shapiro-Wilk).",sep="")
-
-#Add difference to alldata dataframe for plotting.
-alldata[["diff"]] <- diff
-
-#normal Q-Q plot for difference (mean dv). Points should fall on line (in word doc ggplot function is used, see below)
-require(HLMdiag)
-
-#Draw scatterplot with 2 boxplots used in word document
-#Code adapted from: https://github.com/SandyMuspratt/ScatterBoxPlot/blob/master/mtcars%20marginal%20boxplots.R by Sandy Muspratt
-
-require(ggplot2)
-require(gtable)
-
-# Main scatterplot
-p1 <- ggplot(alldata, aes(x=eval(parse(text=paste(xlabel))), y=eval(parse(text=paste(ylabel))))) + 
-  geom_point() +
-  scale_x_continuous(expand = c(0, 0)) + 
-  scale_y_continuous(expand = c(0, 0)) + 
-  expand_limits(y = c(min(alldata[[ylabel]]) - 0.1 * diff(range(alldata[[ylabel]])), 
-                      max(alldata[[ylabel]]) + 0.1 * diff(range(alldata[[ylabel]])))) + 
-  expand_limits(x = c(min(alldata[[xlabel]]) - 0.1 * diff(range(alldata[[xlabel]])), 
-                      max(alldata[[xlabel]]) + 0.1 * diff(range(alldata[[xlabel]])))) + 
-  theme_bw(base_size=14) +
-  ylab(ylabel)  + xlab(xlabel) +
-  theme(plot.margin= unit(c(0, 0, 0.5, 0.5), "lines"))
-  
-# To remove all axis labelling and marks from the two marginal plots
-theme_remove_all <- theme(axis.text = element_blank(),
-                          axis.title = element_blank(),
-                          axis.ticks =  element_blank(),
-                          axis.ticks.margin = unit(0, "lines"),
-                          axis.ticks.length = unit(0, "cm"))
-
-# Horizontal marginal boxplot - to appear at the top of the chart
-p2 <- ggplot(alldata, aes(x = factor(1), y = eval(parse(text=paste(xlabel))))) + 
-  geom_boxplot() +
-#  geom_jitter(position = position_jitter(width = 0.05)) +
-  scale_y_continuous(expand = c(0, 0)) + 
-  expand_limits(y = c(min(alldata[[xlabel]]) - 0.1 * diff(range(alldata[[xlabel]])), 
-                      max(alldata[[xlabel]]) + 0.1 * diff(range(alldata[[xlabel]])))) + 
-  coord_flip() +
-  theme_bw(base_size=14) +
-  theme_remove_all +
-  theme(plot.margin= unit(c(0.5, 0, 0, 0.5), "lines"))
-
-# Vertical marginal boxplot - to appear at the right of the chart
-p3 <- ggplot(alldata, aes(x = factor(1), y = eval(parse(text=paste(ylabel))))) + 
-  geom_boxplot() +
-#  geom_jitter(position = position_jitter(width = 0.05)) +
-  scale_y_continuous(expand = c(0, 0)) + 
-  expand_limits(y = c(min(alldata[[ylabel]]) - 0.1 * diff(range(alldata[[ylabel]])), 
-                      max(alldata[[ylabel]]) + 0.1 * diff(range(alldata[[ylabel]])))) + 
-  theme_bw(base_size=14) +
-  theme_remove_all +
-  theme(plot.margin= unit(c(0, 0.5, 0.5, 0), "lines"))
-
-# Get the gtables
-gt1 <- ggplot_gtable(ggplot_build(p1))
-gt2 <- ggplot_gtable(ggplot_build(p2))
-gt3 <- ggplot_gtable(ggplot_build(p3))
-
-# Get maximum widths and heights for x-axis and y-axis title and text
-maxWidth = unit.pmax(gt1$widths[2:3], gt2$widths[2:3])
-maxHeight = unit.pmax(gt1$heights[4:5], gt3$heights[4:5])
-
-# Set the maximums in the gtables for gt1, gt2 and gt3
-gt1$widths[2:3] <- as.list(maxWidth)
-gt2$widths[2:3] <- as.list(maxWidth)
-
-gt1$heights[4:5] <- as.list(maxHeight)
-gt3$heights[4:5] <- as.list(maxHeight)
-
-# Combine the scatterplot with the two marginal boxplots
-# Create a new gtable
-gt <- gtable(widths = unit(c(7, 1), "null"), height = unit(c(1, 7), "null"))
-
-# Instert gt1, gt2 and gt3 into the new gtable
-gt <- gtable_add_grob(gt, gt1, 2, 1)
-gt <- gtable_add_grob(gt, gt2, 1, 1)
-gt <- gtable_add_grob(gt, gt3, 2, 2)
-
-# And render the plot
-grid.newpage()
-grid.draw(gt)
-
-#histogram for x
-ggplot(alldata, aes(x=eval(parse(text=paste(xlabel)))))  + 
-  geom_histogram(colour="black", fill="grey") +
-  xlab(ylabelstring) + theme_bw(base_size=14)
-#histogram for y
-ggplot(alldata, aes(x=eval(parse(text=paste(ylabel)))))  + 
-  geom_histogram(colour="black", fill="grey") +
-  xlab(ylabelstring) + theme_bw(base_size=14)
-
-#histogram for difference scores
-ggplot(alldata, aes(x=diff))  + 
-  geom_histogram(colour="black", fill="grey") +
-  xlab(ylabelstring) + theme_bw(base_size=14)
-
-#density plot with normal distribution (red) and kernel desity plot
-ggplot(alldata, aes(x=diff))  + 
-  geom_histogram(colour="black", fill="grey", aes(y = ..density..)) +
-  stat_function(fun = dnorm, args = c(mean=mean(alldata$diff), sd=sd(alldata$diff)), size = 1, color = "red", lty=2) +
-  geom_density(fill=NA, colour="black", size = 1) +
-  xlab(ylabelstring) + ggtitle("Difference scores") + theme_bw(base_size=14) 
-
-require(gridExtra)
-#density plot with normal distribution (red) and kernel desity plot
-p1<-ggplot(alldata, aes(x=eval(parse(text=paste(xlabel)))))  + 
-  geom_histogram(colour="black", fill="grey", aes(y = ..density..)) +
-  stat_function(fun = dnorm, args = c(mean=mean(x), sd=sd(x)), size = 1, color = "red", lty=2) +
-  geom_density(fill=NA, colour="black", size = 1) +
-  xlab(ylabelstring)  + ggtitle(xlabel)+ theme_bw(base_size=14) 
-#density plot with normal distribution (red) and kernel desity plot
-p2<-ggplot(alldata, aes(x=eval(parse(text=paste(ylabel)))))  + 
-  geom_histogram(colour="black", fill="grey", aes(y = ..density..)) +
-  stat_function(fun = dnorm, args = c(mean=mean(y), sd=sd(y)), size = 1, color = "red", lty=2) +
-  geom_density(fill=NA, colour="black", size = 1) +
-  xlab(ylabelstring) + ggtitle(ylabel) + theme_bw(base_size=14) 
-
-  grid.arrange(p1, p2, ncol=2)
-
-#Q-Q plot
-ggplot_qqnorm(diff, line = "quantile")+ theme_bw(base_size=14)
 
 #Testing equality of variances
 
@@ -307,12 +178,11 @@ if (pvalueLevene < 0.05){equalvar<-"the assumption that variances are equal is r
 if (pvalueLevene >= 0.05){equalvar<-"the assumption that variances are equal is not rejected."}
 cat("Levene's test for equality of variances (p = ", round(pvalueLevene, digits=2),") indicates that ",equalvar,sep="")
 
-
-##########################################################################################
-##########################################################################################
-#####################Calculate CI around Cohen's d for within designs ####################
-##########################################################################################
-##########################################################################################
+#######################################################
+#######################################################
+###Calculate CI around Cohen's d for within designs ###
+#######################################################
+#######################################################
 
 #Calculate based on data
 r<-cor(x, y) #correlation between dependent measures
@@ -363,16 +233,11 @@ CL<-pnorm(abs(m_diff/s_diff))
 
 require(WRS)
 
-#yuendv2 compared dependent groups, returns explanatory ES (Wilcox, 2012, p.197)
-# explanatory power (Xi) is the robust equivalent of omega squared (unbiased eta squared, or r squared)
-# explanatory power is related to d_z in size, not to d_av. 
-#d = 0.2, 0.5 and 0.8 roughly correspond to small, medium and large effect sizes, respectively.
-#This convention corresponds approximately to Xi = 0.15, 0.35 and 0.50 
 yuend<-yuendv2(x,y, tr=0.2,alpha=ConfInt)
+if(yuend$est1>yuend$est2){direction2<-"greater than"}
+if(yuend$est1<yuend$est2){direction2<-"smaller than"}
 if(yuend$p.value < alpha){surprising2<-"surprising"}
 if(yuend$p.value >= alpha){surprising2<-" not surprising"}
-
-cat("Using the Yuen-Welch method for comparing 20% trimmed means showed the mean difference between conditions (M = ",round(yuendv2(x,y, tr=0.2,alpha=ConfInt)$dif, digits = 2),", 95% CI [", round(yuend$ci[1], digits = 2),";",round(yuend$ci[2], digits = 2),"]) was statistically different from zero, t(",yuend$df,") = ",round(yuend$teststat, digits = 2),", p = ",round(yuend$p.value, digits = 2),", Xi = ", round(yuend$Effect.Size, digits=2),sep = "")
 
 #Interpret size of effect (last resort - use only if effect size cannot be compared to other relevant effects in the literature)
 
@@ -576,7 +441,7 @@ Q-Q-plot
 In the Q-Q plot for the difference scores the points should fall on the line. Deviations from the line in the upper and lower quartiles indicates the tails of the distributions are thicker or thinner than in the normal distribution. An S-shaped curve with a dip in the middle indicates data is left-skewed (more values to the right of the distribution), while a bump in the middle indicates data is right-skewed (more values to the left of the distribution). For interpretation examples, see [here](http://emp.byui.edu/BrownD/Stats-intro/dscrptv/graphs/qq-plot_egs.htm).
 
 ```{r, echo=FALSE, message=FALSE, fig.width=6.3, fig.height=3.6, dpi=300}
-
+require(HLMdiag)
 #Q-Q plot
 ggplot_qqnorm(diff, line = "quantile") + ggtitle("Difference scores") + theme_bw(base_size=14)  + 
   theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank())
@@ -602,13 +467,15 @@ This equality of variances assumption is typically examined with Levene's test, 
 Comparing the two sets of data
 ------
 
+Before looking at the results of the Frequentist statistics and the Robust statistics, decide which of these answer the question you are interested in. Choosing between these two options depending on the outcome of the statistical test inflates the Type 1 error rate. You can always report Bayesian statistics.
+
 ###Frequentist statistics
 
 A *p*-value is the probability of obtaining the observed result, or a more extreme result, assuming the null-hypothesis is true. It is not the probability that the null-hypothesis or the alternative hypothesis is true (for such inferences, see Bayesian statistics below). In repeated sampling, `r 100*ConfInt`% of future `r 100*ConfInt`% confidence intervals can be expected to contain the true population parameters (e.g, the mean difference or the effect size). Confidence intervals are not a statement about the probability that a single confidence interval contains the true population parameter, but a statement about the probability that future confidence intervals will contain the true population parameter. Hedges' *g* (also referred to as *d*~unbiased~, see Borenstein, Hedges, Higgins, & Rothstein, 2009) is provided as best estimate of Cohen's *d*, but the best estimate of the confidence interval is based on *d*~av~ (as recommended by Cumming, 2012). Hedges's *g* and the `r 100*ConfInt`% CI around the effect size are calculated using the MBESS package by ([Kelley (2007](http://dx.doi.org/10.3758/BF03192993)). The common language effect size expresses the probability that in any random pairing of two observations from both groups, the observation from one group is higher than the observation from the other group, see [McGraw & Wong, 1992](http://dx.doi.org/10.1037/0033-2909.111.2.361). In a dependent *t*-test, the effect size Cohen's *d* can be calculated by using a standardizer that controls for the correlation between observations (*d*~av~) or not (*d*~z~). Both are provided, but *d*~av~ (or actually it's unbiased estimate, *g*~av~) is recommended. For a discussion, see [Lakens, 2013](http://journal.frontiersin.org/Journal/10.3389/fpsyg.2013.00863/full). Default interpretations of the size of an effect as provided here should only be used as a last resort, and it is preferable to interpret the size of the effect in relation to other effects in the literature, or in terms of its practical significance.
 
 ####Results
 
-The mean `r ylabelstring` (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round(sd1, digits = 2)`) of participants in the `r xlabel` condition was `r direction` the mean (*M* = `r round(mean(y), digits = 2)`, *SD* = `r round(sd2,digits=2)`) of participants in the `r ylabel` condition (*r* = `r round(r, digits = 2)`). The difference between measurements is (*M* = `r round(m_diff, digits=2)`, *SD* = `r round(s_diff, digits=2)`), `r 100*ConfInt`% CI = [`r round(CI_diff[1:1], digits=2)`;`r round(CI_diff[2:2],digits=2)`], *t*(`r round(ttestresult$parameter, digits=2)`) = `r round(tvalue, digits=2)`, *p* `r ifelse(pvalue>0.001," = ", " < ")` `r ifelse(pvalue>0.001, formatC(round(pvalue, digits=3),digits=3, format="f"), "0.001")`, Hedges' *g* = `r round(d_unb, digits=2)`, `r 100*ConfInt`% CI [`r round(ci_l_d_av, digits=2)`;`r round(ci_u_d_av, digits=2)`] (or *d*~z~ = `r round(d_z, digits=2)`, `r 100*ConfInt`% CI [`r round(ci_l_d_z, digits=2)`;`r round(ci_u_d_z, digits=2)`]). This can be considered a `r effectsize` effect. The observed data is `r surprising` under the assumption that the null-hypothesis is true. The Common Language effect size (McGraw & Wong, 1992) indicates that after controlling for individual differences, the likelihood that a persons `r ylabelstring` in the `r xlabel` condition is `r direction` the `r ylabelstring` in the `r ylabel` condition is `r round(100*CL, digits=0)`%.
+The mean `r ylabelstring` of participants in the `r xlabel` condition (*M* = `r round(mean(x), digits = 2)`, *SD* = `r round(sd1, digits = 2)`)  was `r direction` the mean of participants in the `r ylabel` condition (*M* = `r round(mean(y), digits = 2)`, *SD* = `r round(sd2,digits=2)`, *r* = `r round(r, digits = 2)`). The difference between measurements (*M* = `r round(m_diff, digits=2)`, *SD* = `r round(s_diff, digits=2)`, `r 100*ConfInt`% CI = [`r round(CI_diff[1:1], digits=2)`;`r round(CI_diff[2:2],digits=2)`]) was analyzed with a dependent *t*-test, *t*(`r round(ttestresult$parameter, digits=2)`) = `r round(tvalue, digits=2)`, *p* `r ifelse(pvalue>0.001," = ", " < ")` `r ifelse(pvalue>0.001, formatC(round(pvalue, digits=3),digits=3, format="f"), "0.001")`, Hedges' *g* = `r round(d_unb, digits=2)`, `r 100*ConfInt`% CI [`r round(ci_l_d_av, digits=2)`;`r round(ci_u_d_av, digits=2)`] (or *d*~z~ = `r round(d_z, digits=2)`, `r 100*ConfInt`% CI [`r round(ci_l_d_z, digits=2)`;`r round(ci_u_d_z, digits=2)`]). This can be considered a `r effectsize` effect. The observed data is `r surprising` under the assumption that the null-hypothesis is true. The Common Language effect size (McGraw & Wong, 1992) indicates that after controlling for individual differences, the likelihood that a persons `r ylabelstring` in the `r xlabel` condition is `r direction` the `r ylabelstring` in the `r ylabel` condition is `r round(100*CL, digits=0)`%.
 
 ###Bayesian statistics
 
@@ -620,20 +487,13 @@ The JZS BF~10~ (with r scale = `r BFrscale`) = `r round(BF, digits=2)`. This ind
 
 ###Robust statistics
 
-Values in the tails of the distribution can have a strong influence on the mean. If values in the tails differ from a normal distribution, the power of a test is reduced and the effect size estimates are biased, even under slight deviations from normality (Wilcox, 2012). One way to deal with this problem is to remove the tails in the analysis by using *trimmed means*. A recommended percentage of trimming is 20% from both tails (Wilcox, 2012), which means inferences are based on the 60% of the data in the middle of the distribution. Yuen's method can be used to compare trimmed means (when the percentage of trimming is 0%, Yuen's method reduces to Welch's *t*-test). The equivalent of Cohen's *d* for within designs is not yet available, so the explanatory effect size is reported ([Wilcox & Tian, 2011](http://dx.doi.org/10.1080/02664763.2010.498507)). Explanatory power (Xi, replace in the output below by the Greek lowercase Xi symbol) is the robust equivalent of omega squared (unbiased eta squared, or r squared), and thus related to *d*~z~ in size, not to *d*~av~. The effect size convention of small, medium, and large corresponds approximately to Xi = 0.15, 0.35 and 0.50. 
+Values in the tails of the distribution can have a strong influence on the mean. If values in the tails differ from a normal distribution, the power of a test is reduced and the effect size estimates are biased, even under slight deviations from normality (Wilcox, 2012). One way to deal with this problem is to remove the tails in the analysis by using *trimmed means*. A recommended percentage of trimming is 20% from both tails (Wilcox, 2012), which means inferences are based on the 60% of the data in the middle of the distribution. Yuen's method can be used to compare trimmed means (when the percentage of trimming is 0%, Yuen's method reduces to Welch's *t*-test). The equivalent of Cohen's *d* for within designs is not yet available, so the explanatory effect size is reported ([Wilcox & Tian, 2011](http://dx.doi.org/10.1080/02664763.2010.498507)). Explanatory power (Xi, replace in the output below by the Greek lowercase Xi symbol) is the robust equivalent of omega squared (unbiased eta squared, or *r* squared), and thus related to *d*~z~ in size, not to *d*~av~. The effect size convention of small, medium, and large corresponds approximately to Xi = 0.15, 0.35 and 0.50. 
 
 ####Results
 
-Using the Yuen-Welch method for comparing 20% trimmed means showed the mean difference in `r ylabelstring` between conditions is (*M* = `r round(yuend$dif, digits = 2)`, `r 100*ConfInt`% CI [`r round(yuend$ci[1], digits = 2)`;`r round(yuend$ci[2], digits = 2)`]), which is statistically different from zero, *t*(`r yuend$df`) = `r round(yuend$teststat, digits = 2)`, *p* `r ifelse(yuend$p.value>0.001," = ", " < ")` `r ifelse(yuend$p.value>0.001, formatC(round(yuend$p.value, digits = 3), digits=3, format="f"), "0.001")`, Xi = `r round(yuend$Effect.Size, digits=2)`. The observed data is `r surprising2` under the assumption that the null-hypothesis is true. This can be considered a `r effectsize2` effect.
+The 20% trimmed mean `r ylabelstring` of participants in the `r xlabel` condition (*M* = `r round(yuend$est1, digits = 2)`)  was `r direction` the 20% trimmed mean of participants in the `r ylabel` condition (*M* = `r round(yuend$est2, digits = 2)`). The difference in `r ylabelstring` between the conditions (*M* = `r round(yuend$dif, digits = 2)`, `r 100*ConfInt`% CI [`r round(yuend$ci[1], digits = 2)`;`r round(yuend$ci[2], digits = 2)`]) was analyzed using the Yuen-Welch test for 20% trimmed means, *t*(`r yuend$df`) = `r round(yuend$teststat, digits = 2)`, *p* `r ifelse(yuend$p.value>0.001," = ", " < ")` `r ifelse(yuend$p.value>0.001, formatC(round(yuend$p.value, digits = 3), digits=3, format="f"), "0.001")`, Xi = `r round(yuend$Effect.Size, digits=2)`. The observed data is `r surprising2` under the assumption that the null-hypothesis is true. This can be considered a `r effectsize2` effect.
 
-
-
-Plotting data
-------
-
-Graph examples. In the code, you can turn different layers on and off, and change their properties by adding or removing # in front of a line of code. Displays violin plot (rotated kernal density plots) and `r 100*ConfInt`% CI bars (for between designs and adjusted for within designs following Morey (2008)), individual data-points, or simple bar graphs.
-
-###*Figure 1*. Means, violin plot, and two-tiered `r 100*ConfInt`% within (crossbars) and between (endpoints of lines) confidence intervals following Baguley (2012), and violin plot. 
+###*Figure 1*. Means, violin plot, and two-tiered `r 100*ConfInt`% within (crossbars) and between (endpoints of lines) confidence intervals following Morey (2008) and Baguley (2012).
 
 ```{r, echo=FALSE,  fig.width=3, dpi=300}
 #Example 1: means and two-tiered 95% CI (within and between) suggested by Baguley 
@@ -664,14 +524,14 @@ ggplot(ci.sum, aes(x=eval(parse(text=paste(factorlabel))), y=eval(parse(text=pas
   theme(panel.grid.major.x = element_blank())
 ```
 
-###*Figure 3*. Bar chart displaying means and `r 100*ConfInt`% CI (between)  
+###*Figure 3*. Bar chart displaying means and `r 100*ConfInt`% CI (between and within)  
 
 ```{r, echo=FALSE,  fig.width=3, dpi=300}
 #Example 2: bar chart with individual data point and 95% CI (between)
 ggplot(ci.sum, aes(x=eval(parse(text=paste(factorlabel))), y=eval(parse(text=paste(measurelabel))), group=1)) +
   geom_bar(position=position_dodge(.9), colour="black", stat="identity", fill="white") +
   geom_errorbar(width=.25, size=0.5, aes(ymin=lower, ymax=upper)) +
-#  geom_errorbar(width=0, size=1.1, aes(ymin=lower.between, ymax=upper.between)) +
+  geom_errorbar(width=0, size=1.1, aes(ymin=lower.between, ymax=upper.between)) +
 #  geom_point(size=4) +
 #  geom_point(data=alldata.long) +
   ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14) + 
@@ -759,6 +619,4 @@ from https://github.com/Lakens/perfect-t-test. doi:10.5281/zenodo.17603
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
-
-For more information, see the [GNU Affero General Public License](http://www.gnu.org/licenses/)
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For more information, see the [GNU Affero General Public License](http://www.gnu.org/licenses/)
