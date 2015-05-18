@@ -1,7 +1,11 @@
 # the perfect-*t*-test
 
+For comments, suggestions for improvements, or if you find an error, please contact me at <D.Lakens@tue.nl>.
 
-Lakens, D. (2015). The perfect *t*-test (version 0.1.2). Retrieved
+
+You can cite this script as: 
+
+Lakens, D. (2015). The perfect *t*-test (version 1.0.0). Retrieved
 from https://github.com/Lakens/perfect-t-test. doi:10.5281/zenodo.17603
 
 
@@ -37,7 +41,7 @@ If all this is done, simply hit the **Knit Word** button (or choose the **Knit H
 The output you get contains a boxplot, four tests for normality, histograms with kernel density plots, and Q-Q plots to check the normality of the data. It provides a test for equality of variances, but for independent *t*-tests Welch's *t*-test is report by default, regardless of whether the equality of variances assumption is violated. Frequentist statistics return the means, standard deviations, mean difference with confidence intervals, Welch's *t*-test with an effect size and the 95% confidence interval, as well as the common language effect size. Bayesian statistics are provided, including the Bayes Factor and the Highest Density Interval. Robust statistics are provided, using 20% trimmed means. Finally, a number of figures is provided that illustrate the 95% confidence intervals (within and between for dependent *t*-tests) as well as violin plots that show how the data is distributed.
 
 
-I want to thank Alexander Etz, Richard Morey, and Felix Schonbrodt for feedback on the script, and Sonya Dal Cin, Lilian Jans-Beken, Atesh Koul, Gwilym Lockwood, and Arnoud Plantinga for beta-testing.
+I want to thank Alexander Etz, Richard Morey, and Felix Schonbrodt for feedback on the script, and Sonya Dal Cin, Lilian Jans-Beken, Atesh Koul, Gwilym Lockwood, Arnoud Plantinga, and Anne Schietecat for beta-testing.
 
 
 Copyright © 2015 Daniel Lakens
