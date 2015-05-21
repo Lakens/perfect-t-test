@@ -3,7 +3,7 @@
 New to R? This 5 minute video will get you up and running with this script in no time.
 
 
-<div align="center"><iframe width="560" height="315" src="http://www.youtube.com/embed/kNL8Y17yLME" frameborder="0" allowfullscreen></iframe></div>
+[![ScreenShot](http://img.youtube.com/vi/kNL8Y17yLME/1.jpg)](http://youtu.be/kNL8Y17yLME)
 
 
 For comments, suggestions for improvements, or if you find an error, please contact me at <D.Lakens@tue.nl>.
