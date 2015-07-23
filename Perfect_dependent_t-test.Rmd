@@ -163,22 +163,14 @@ bs.ci <- function(data.frame, conf.level = ConfInt, difference = FALSE) {
 #order of matrix is flipped around for bs.ci, which returns alphabetically ordered rows
 ci.sum<-as.data.frame(cm.ci(alldata[2:3]))
 ordernames<-rownames(ci.sum)#store order of dataframe rows
-<<<<<<< HEAD
 ifelse(rownames(ci.sum)[1]!=xlabel,ci.sum<-ci.sum[rev(rownames(ci.sum)),],NA)#flip order around 
-=======
-ci.sum <- ci.sum[order(c(xlabel,ylabel)),]#flip order around 
->>>>>>> bcf10a12862838ab3a9249cc5c9afd747d42efbd
 ci.sum[[factorlabel]] <- c(xlabel,ylabel)
 ci.sum[[measurelabel]] <- c(mean(x),mean(y))
 ci.sum <- ci.sum[order(ci.sum[[factorlabel]]),]
 ci.sum[["lower.between"]] <- as.data.frame(bs.ci(alldata[2:3]))$lower
 ci.sum[["upper.between"]] <- as.data.frame(bs.ci(alldata[2:3]))$upper
-<<<<<<< HEAD
 ci.sum <- ci.sum[order(ordernames),]#flip order around 
 
-=======
-ci.sum <- ci.sum[order(c(xlabel,ylabel)),]#flip order around 
->>>>>>> bcf10a12862838ab3a9249cc5c9afd747d42efbd
 
 ##################################################################
 ##################################################################
