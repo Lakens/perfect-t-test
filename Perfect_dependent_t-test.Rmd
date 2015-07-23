@@ -16,9 +16,16 @@ output: word_document
 ######  FIRST TIME ONLY ############
 ####################################
 
-#Remove # in front of the line below and run the code. Replace the # after installing the packages, otherwise the R markdown script will give errors.
+#Remove # in front of the line below and run the code. Replace the # after installing the packages, otherwise the R markdown script will give errors. 
 
-#install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools","rmarkdown","gmodels", "HLMdiag", "car", "gridExtra", "bootES", "BEST"))
+#install.packages(c("MASS", "akima", "robustbase", "cobs", "robust", "mgcv", "scatterplot3d", "quantreg", "rrcov", "lars", "pwr", "trimcluster", "mc2d", "psych", "Rfit","MBESS", "BayesFactor", "PoweR", "ggplot2", "reshape2", "plyr", "devtools","rmarkdown","gmodels", "car", "gridExtra", "bootES", "BEST"))
+
+#The version of HLMdiag on CRAN gives an error - run the four lines of code below to install the latest version of HLMdiag. Install all required software.
+#install.packages("devtools")
+#install.packages("stringi")
+#library(devtools)
+#install_github("aloy/HLMdiag")
+
 
 #Installation of the robust statistics package: Remove # in front of each of 4 lines below and run the code. Replace the # after installing the packages, otherwise the R markdown script will give errors.
 
@@ -506,7 +513,6 @@ ggplot(ci.sum, aes(x=eval(parse(text=paste(factorlabel))), y=eval(parse(text=pas
   geom_violin(data=alldata.long, aes(group=eval(parse(text=paste(factorlabel)))), alpha=0) +
   ylab(ylabelstring)  + xlab(xlabelstring) + theme_bw(base_size=14) + 
   theme(panel.grid.major.x = element_blank())
-
 ```
 
 ###*Figure 2*. Means, datapoints, and `r 100*ConfInt`% CI (between & within)  
