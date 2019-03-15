@@ -4,6 +4,7 @@ author: "Daniel Lakens, D.Lakens@tue.nl"
 output: 
   html_document:
     always_allow_html: yes
+    keep_md: TRUE
 ---
 
 ```{r, echo=FALSE, include=FALSE, cache = FALSE}
