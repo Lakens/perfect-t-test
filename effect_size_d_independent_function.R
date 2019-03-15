@@ -56,7 +56,9 @@ effect_size_d <- function (x, y, conf.level = 0.95){
   cat("\n")
   cat("n1 = ", paste0(n1),", n2 = ", paste0(n2),
       sep = "")
-  invisible(list(m_diff = m_diff, 
+  invisible(list(m_diff = m_diff,
+                 m1 <- mean(x),
+                 m2 <- mean(y),
                  ci_l_m_diff = test_res$conf.int[1], 
                  ci_u_m_diff = test_res$conf.int[2], 
                  d = d, 
@@ -73,7 +75,9 @@ effect_size_d <- function (x, y, conf.level = 0.95){
                  sd1 = sd(x), 
                  sd2 = sd(y), 
                  cor = cor(x,y), 
-                 t = t_value, 
+                 t_value = t_value, 
                  df = n1 + n2 - 2, 
-                 ncp = ncp))
+                 ncp = ncp,
+                 p_value = test_res$p.value,
+                 CL = pnorm(abs(m_diff)/sqrt(sd1^2 + sd2^2))))
 }

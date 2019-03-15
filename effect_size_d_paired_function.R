@@ -54,6 +54,8 @@ effect_size_d_paired <- function (x, y, conf.level = 0.95){
   cat("N = ", paste0(N)," pairs.",
       sep = "")
   invisible(list(m_diff = m_diff, 
+                 m1 <- mean(x),
+                 m2 <- mean(y),
                  ci_l_m_diff = test_res$conf.int[1], 
                  ci_u_m_diff = test_res$conf.int[2], 
                  d_av = d_av, 
@@ -71,7 +73,8 @@ effect_size_d_paired <- function (x, y, conf.level = 0.95){
                  m2 = mean(y), 
                  sd1 = sd(x), 
                  sd2 = sd(y), 
-                 t = t_value, 
+                 t_value = t_value, 
                  df = N-1, 
-                 cor = cor(x,y)))
+                 cor = cor(x,y),
+                 p_value = test_res$p.value))
 }
