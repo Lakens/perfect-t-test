@@ -1,9 +1,9 @@
 ---
 title: "Independent *t*-test"
 author: "Daniel Lakens, D.Lakens@tue.nl"
-output: word_document
-editor_options: 
-  chunk_output_type: console
+output: 
+  html_document:
+    always_allow_html: yes
 ---
 
 ```{r, echo=FALSE, include=FALSE, cache = FALSE}
@@ -13,6 +13,7 @@ require(car)
 require(HLMdiag)
 require(gtable)
 require(gridExtra)
+require(codebook)
 
 source("effect_size_d_independent_function.R")
 
@@ -367,6 +368,18 @@ Yap, B. W., & Sim, C. H. (2011). Comparisons of various types of normality tests
 alldata
 
 sessionInfo()
+
+codebook_data <- alldata
+
+codebook_data <- detect_missing(codebook_data,
+    only_labelled = TRUE, # only labelled values are autodetected as
+                                   # missing
+    negative_values_are_missing = FALSE, # negative values are NOT missing values
+    ninety_nine_problems = TRUE,   # 99/999 are missing values, if they
+                                   # are more than 5 MAD from the median
+    )
+
+codebook(codebook_data)
 ```
 
 
